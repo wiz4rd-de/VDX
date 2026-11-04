@@ -32,6 +32,10 @@ struct EngineDebug {
   int32_t* logfreqLog = nullptr;
   int logfreqCap = 0;
   int logfreqCount = 0;
+  // If set, every rendered block appends its DAC tap here (AC-E15.3, goldens).
+  int32_t* tapLog = nullptr;
+  size_t tapCap = 0;
+  size_t tapCount = 0;
 };
 
 class Engine {

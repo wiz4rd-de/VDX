@@ -9,7 +9,7 @@ file(GLOB_RECURSE VDX_TEST_SOURCES CONFIGURE_DEPENDS
 
 add_executable(vdx_tests ${VDX_TEST_SOURCES})
 target_link_libraries(vdx_tests PRIVATE vdx_core_internal vdx_bridge vdx_catch2)
-target_include_directories(vdx_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(vdx_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/support)
 target_compile_definitions(vdx_tests PRIVATE VDX_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 vdx_set_strict_fp(vdx_tests)
 

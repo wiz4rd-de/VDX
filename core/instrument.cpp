@@ -35,6 +35,8 @@ constexpr int kPendingMsgs = 2048;
 constexpr int kPendingBytes = 1 << 16;
 constexpr size_t kFifo = 1 << 16;
 constexpr int kMaxChunk = 4096;
+// r8brain 24-bit preset; 15 % transition band: ~4.4 ms look-ahead, passband ~20 kHz (DECISIONS D-E21).
+constexpr double kResamplerTransBand = 15.0;
 }  // namespace
 
 struct Instrument::Impl final : EventSink, MidiOutSink {
@@ -72,8 +74,17 @@ struct Instrument::Impl final : EventSink, MidiOutSink {
   void configure(double host, int maxBlk) {
     hostRate = host > 0 ? host : 48000.0;
     maxBlock = std::max(1, maxBlk);
-    const bool hostRateMode = core.settings().hostRate;
-    applyRateMode(hostRateMode, /*allowAlloc=*/true);
+    // Build the resampler whenever the host rate differs from the internal
+    // rate, even in host-rate mode, so toggling the setting never allocates.
+    if (std::fabs(hostRate - kInternalRate) > 1e-6) {
+      rs = std::make_unique<r8b::CDSPResampler24>(kInternalRate, hostRate, kBlock, kResamplerTransBand);
+      rsHost = hostRate;
+      lookahead = rs->getInLenBeforeOutStart(0);
+    } else {
+      rs.reset();
+      rsHost = 0.0;
+    }
+    applyRateMode(core.settings().hostRate, /*allowAlloc=*/false);
   }
 
   // Real-time safe unless allowAlloc (the resampler is built only then).
@@ -83,15 +94,12 @@ struct Instrument::Impl final : EventSink, MidiOutSink {
     useResampler = std::fabs(engineRate - hostRate) > 1e-6;
     hostRateI = int64_t(std::llround(hostRate));
     engineRateI = int64_t(std::llround(engineRate));
-    if (useResampler) {
-      if (allowAlloc || !rs || rsHost != hostRate) {
-        rs = std::make_unique<r8b::CDSPResampler24>(kInternalRate, hostRate, kBlock);
-        rsHost = hostRate;
-        lookahead = rs->getInLenBeforeOutStart(0);
-      }
+    if (useResampler && rs) {
+      (void)allowAlloc;
       rs->clear();
       latency = int(std::ceil(double(kBlock + lookahead) * hostRate / engineRate)) + 1;
     } else {
+      useResampler = false;
       latency = kBlock;
     }
     core.prepare(engineRate);

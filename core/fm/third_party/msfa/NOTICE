@@ -1,0 +1,20 @@
+MSFA — Music Synthesizer for Android, as distributed with Dexed (source/msfa).
+
+Copyright 2012, 2013 Google Inc.
+Copyright Dexed contributors (Pascal Gauthier and others) for their changes.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+these files except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
+These files were copied unmodified from https://github.com/asb2m10/dexed at
+commit fea2f0f0f2c397799f59b27eb11c038cd34b22c5, except tuning.cc/tuning.h, which
+are not included (no licence header). VDX builds sin.cc, exp2.cc,
+fm_op_kernel.cc and fm_core.cc from this directory. VDX files derived from MSFA
+(core/fm/dx7tables.h, core/fm/lfo_pitchenv.h, parts of core/fm/engine.cpp and
+core/fm/env.h) carry the Apache-2.0 header and state their modifications.
