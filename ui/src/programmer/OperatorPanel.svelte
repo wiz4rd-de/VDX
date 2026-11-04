@@ -72,20 +72,22 @@
     />
   </div>
 
-  <!-- 2. Frequency row -->
-  <div class="row" style="top:30px">
-    <div class="f" style="width:42px"><span class="lbl">MODE</span><Param voice={p(OP.MODE)} kind="cycle" /></div>
-    <div class="f" style="width:32px"><span class="lbl">COARSE</span><Param voice={p(OP.COARSE)} /></div>
-    <div class="f" style="width:32px"><span class="lbl">FINE</span><Param voice={p(OP.FINE)} /></div>
-    <div class="f" style="width:32px"><span class="lbl">DETUNE</span><Param voice={p(OP.DETUNE)} /></div>
-    <div class="f" style="width:38px">
+  <!-- 2. Frequency row (two lines: the mode string is 16 characters, R-P8) -->
+  <div class="row" style="top:27px">
+    <div class="f" style="width:126px"><span class="lbl">MODE</span><Param voice={p(OP.MODE)} kind="cycle" class="sm" /></div>
+    <div class="f" style="width:50px"><span class="lbl">DETUNE</span><Param voice={p(OP.DETUNE)} class="sm" /></div>
+  </div>
+  <div class="row" style="top:57px">
+    <div class="f" style="width:62px"><span class="lbl">COARSE</span><Param voice={p(OP.COARSE)} class="sm" /></div>
+    <div class="f" style="width:62px"><span class="lbl">FINE</span><Param voice={p(OP.FINE)} class="sm" /></div>
+    <div class="f" style="width:50px">
       <span class="lbl">FREQ</span>
       <span class="freq" data-testid="op-freq-{op}" title="OP{op} frequency">{store.ready ? store.opFreq[op] : ''}</span>
     </div>
   </div>
 
   <!-- 3. Output level (large) -->
-  <div class="row" style="top:66px">
+  <div class="row" style="top:88px">
     <div class="f wide" style="width:184px">
       <span class="lbl">OUTPUT LEVEL</span>
       <Param voice={p(OP.LEVEL)} class="big" />
@@ -93,27 +95,27 @@
   </div>
 
   <!-- 4. Velocity sensitivity, AMS, rate scaling -->
-  <div class="row" style="top:100px">
-    <div class="f" style="width:58px"><span class="lbl">KEY VEL</span><Param voice={p(OP.KVS)} /></div>
-    <div class="f" style="width:58px"><span class="lbl">AMS</span><Param voice={p(OP.AMS)} /></div>
-    <div class="f" style="width:58px"><span class="lbl">RATE SCL</span><Param voice={p(OP.RATE_SCALING)} /></div>
+  <div class="row" style="top:115px">
+    <div class="f" style="width:58px"><span class="lbl">KEY VEL</span><Param voice={p(OP.KVS)} class="sm" /></div>
+    <div class="f" style="width:58px"><span class="lbl">AMS</span><Param voice={p(OP.AMS)} class="sm" /></div>
+    <div class="f" style="width:58px"><span class="lbl">RATE SCL</span><Param voice={p(OP.RATE_SCALING)} class="sm" /></div>
   </div>
 
   <!-- 5. EG graph + 8 fields -->
-  <div class="graph" style="top:136px">
+  <div class="graph" style="top:146px">
     <EnvGraph r0={p(OP.R1)} width={184} height={90} testid="eg-graph-{op}" />
   </div>
-  <div class="row tight" style="top:228px">
+  <div class="row tight" style="top:238px">
     {#each EG_LABELS as l, k}
       <div class="f" style="width:22px"><span class="lbl">{l}</span><Param voice={p(OP.R1 + k)} class="sm" /></div>
     {/each}
   </div>
 
   <!-- 6. Level-scaling graph, curves, depths, break point -->
-  <div class="graph" style="top:262px">
+  <div class="graph" style="top:269px">
     <ScalingGraph {op} width={184} height={60} />
   </div>
-  <div class="row" style="top:324px">
+  <div class="row" style="top:331px">
     <div class="f" style="width:34px"><span class="lbl">L CURVE</span><Param voice={p(OP.LEFT_CURVE)} kind="cycle" class="sm" /></div>
     <div class="f" style="width:30px"><span class="lbl">L DEPTH</span><Param voice={p(OP.LEFT_DEPTH)} class="sm" /></div>
     <div class="f" style="width:40px"><span class="lbl">BREAK PT</span><Param voice={p(OP.BREAK_POINT)} class="sm" /></div>
@@ -122,8 +124,8 @@
   </div>
 
   <!-- 7. Output meter -->
-  <div class="graph" style="top:358px">
-    <Meter {op} width={184} height={6} />
+  <div class="graph" style="top:362px">
+    <Meter {op} width={184} height={5} />
   </div>
 </div>
 
@@ -132,7 +134,7 @@
     position: absolute;
     left: 8px;
     right: 8px;
-    top: 4px;
+    top: 2px;
     height: 22px;
     display: flex;
     align-items: center;
@@ -169,7 +171,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 20px;
+    height: 18px;
     color: var(--legend);
     font: 600 12px/1 'Barlow Condensed', sans-serif;
     font-variant-numeric: tabular-nums;
@@ -182,8 +184,14 @@
   }
   .wide :global(.big) {
     width: 70px;
-    height: 30px;
-    font-size: 22px;
+    height: 24px;
+    font-size: 20px;
+  }
+  .op :global(.lbl) {
+    line-height: 9px;
+  }
+  .op .f {
+    gap: 1px;
   }
   .row :global(.sm) {
     height: 18px;

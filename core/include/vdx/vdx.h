@@ -159,6 +159,8 @@ enum class EvType : uint16_t {
   ExportData,      // a = ExportKind; payload = file bytes; text = sanitised file name
   StateDirty,      // saved state changed (shell persistence)
   SnapshotEnd,     // end of a RequestSnapshot burst
+  ParamText,       // display string of an unchanged parameter whose string depends on another
+                   // (R-P8): a = voice index 0..155 or function 64..77, b = value, c = 0 voice / 1 function; text
   Count
 };
 

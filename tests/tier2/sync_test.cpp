@@ -4,6 +4,7 @@
 // test) gives identical core state, with exactly one parameter-changed event
 // per change.
 #include <memory>
+#include <string>
 #include <random>
 
 #include "rig.h"
@@ -198,4 +199,44 @@ TEST_CASE("AC-U4.1 core part: SelectOperator selects the operator without changi
   inst.render(l.data(), r.data(), 512);
   CHECK(inst.core().impl().selOp == 4);
   CHECK(inst.core().impl().mode == vdx::kModePlay);
+}
+
+TEST_CASE("AC-P8.1 dependent display strings refresh without counting as parameter changes", "[panel]") {
+  vdx::Instrument inst(48000.0, 512);
+  std::vector<float> l(512), r(512);
+  inst.render(l.data(), r.data(), 512);
+  vdx::Event e;
+  while (inst.pollEvent(e)) {}
+  auto post = [&](vdx::CmdType t, int a, int b) {
+    vdx::Command c;
+    c.type = t;
+    c.src = vdx::Source::Programmer;
+    c.a = a;
+    c.b = b;
+    inst.post(c);
+    inst.render(l.data(), r.data(), 512);
+  };
+  const int mode = vdx::params::opParam(3, vdx::params::kOpMode);
+  const int coarse = vdx::params::opParam(3, vdx::params::kOpCoarse);
+  const int fine = vdx::params::opParam(3, vdx::params::kOpFine);
+  post(vdx::CmdType::SetVoiceParam, mode, 1);  // OP3 -> fixed
+  int paramEvents = 0;
+  std::string coarseText, fineText;
+  while (inst.pollEvent(e)) {
+    if (e.type == vdx::EvType::VoiceParam) ++paramEvents;
+    if (e.type == vdx::EvType::ParamText && e.a == coarse) coarseText = e.text;
+    if (e.type == vdx::EvType::ParamText && e.a == fine) fineText = e.text;
+  }
+  CHECK(paramEvents == 1);
+  CHECK(coarseText == "10.00Hz");  // fixed, coarse 1 (& 3 = 1), fine 0
+  CHECK(fineText == "10.00Hz");
+  post(vdx::CmdType::SetFunctionParam, vdx::params::kFnMono, 1);
+  std::string porta;
+  int fnEvents = 0;
+  while (inst.pollEvent(e)) {
+    if (e.type == vdx::EvType::FunctionParam) ++fnEvents;
+    if (e.type == vdx::EvType::ParamText && e.c == 1 && e.a == vdx::params::kFnPortaMode) porta = e.text;
+  }
+  CHECK(fnEvents == 1);
+  CHECK(porta == "FINGERED PORTA");
 }

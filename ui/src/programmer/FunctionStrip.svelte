@@ -9,14 +9,14 @@
   import ParamControl from '../controls/ParamControl.svelte';
 
   const SINGLE: { label: string; func?: number; global?: 'masterTune' | 'volume'; w: number; kind?: 'cycle' | 'toggle' }[] = [
-    { label: 'POLY/MONO', func: FN.MONO, w: 58, kind: 'cycle' },
-    { label: 'BEND RANGE', func: FN.BEND_RANGE, w: 48 },
-    { label: 'BEND STEP', func: FN.BEND_STEP, w: 48 },
-    { label: 'PORTA MODE', func: FN.PORTA_MODE, w: 80, kind: 'cycle' },
-    { label: 'GLISSANDO', func: FN.GLISSANDO, w: 52, kind: 'toggle' },
-    { label: 'PORTA TIME', func: FN.PORTA_TIME, w: 48 },
-    { label: 'MASTER TUNE', global: 'masterTune', w: 84 },
-    { label: 'VOLUME', global: 'volume', w: 48 },
+    { label: 'POLY/MONO', func: FN.MONO, w: 66, kind: 'cycle' },
+    { label: 'BEND RANGE', func: FN.BEND_RANGE, w: 44 },
+    { label: 'BEND STEP', func: FN.BEND_STEP, w: 44 },
+    { label: 'PORTA MODE', func: FN.PORTA_MODE, w: 104, kind: 'cycle' },
+    { label: 'GLISSANDO', func: FN.GLISSANDO, w: 48, kind: 'toggle' },
+    { label: 'PORTA TIME', func: FN.PORTA_TIME, w: 44 },
+    { label: 'MASTER TUNE', global: 'masterTune', w: 80 },
+    { label: 'VOLUME', global: 'volume', w: 44 },
   ];
   const GROUPS = [
     { name: 'WHEEL', range: FN.WHEEL_RANGE, assign: FN.WHEEL_ASSIGN },
@@ -52,7 +52,7 @@
           <Param func={g.range} />
         </div>
         {#each BIT_LABELS as bl, bit}
-          <div class="f" style="width:40px">
+          <div class="f" style="width:36px">
             <span class="lbl">&nbsp;</span>
             <ParamControl
               kind="toggle"

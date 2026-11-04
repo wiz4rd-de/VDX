@@ -343,6 +343,13 @@ std::string encodeEvent(const Event& e) {
       ks("s", textOf(e, 64));
       ks("src", sourceName(e.src));
       break;
+    case EvType::ParamText:
+      s = e.c ? "{\"e\":\"func\"" : "{\"e\":\"param\"";
+      kv("i", e.a);
+      kv("v", e.b);
+      ks("s", textOf(e, 64));
+      ks("src", sourceName(e.src));
+      break;
     case EvType::FunctionParam:
       s = "{\"e\":\"func\"";
       kv("i", e.a);

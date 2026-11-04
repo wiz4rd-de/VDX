@@ -67,25 +67,25 @@
     <h3>Sound</h3>
     <fieldset>
       <legend>Engine</legend>
-      <label><input type="radio" name="engine" checked={s.engine === 0} data-testid="setting-engine-mk1" onchange={() => set('engine', 0)} /> Mk I</label>
-      <label><input type="radio" name="engine" checked={s.engine === 1} data-testid="setting-engine-modern" onchange={() => set('engine', 1)} /> Modern</label>
+      <label><input tabindex="0" type="radio" name="engine" checked={s.engine === 0} data-testid="setting-engine-mk1" onchange={() => set('engine', 0)} /> Mk I</label>
+      <label><input tabindex="0" type="radio" name="engine" checked={s.engine === 1} data-testid="setting-engine-modern" onchange={() => set('engine', 1)} /> Modern</label>
     </fieldset>
     <label class="line">
-      <input type="checkbox" checked={s.dac === 1} disabled={s.engine !== 0} data-testid="setting-dac" onchange={(e) => set('dac', e.currentTarget.checked ? 1 : 0)} />
+      <input tabindex="0" type="checkbox" checked={s.dac === 1} disabled={s.engine !== 0} data-testid="setting-dac" onchange={(e) => set('dac', e.currentTarget.checked ? 1 : 0)} />
       DAC emulation (Mk I only)
     </label>
     <label class="line">
-      <input type="checkbox" checked={s.hostRate === 1} data-testid="setting-hostRate" onchange={(e) => set('hostRate', e.currentTarget.checked ? 1 : 0)} />
+      <input tabindex="0" type="checkbox" checked={s.hostRate === 1} data-testid="setting-hostRate" onchange={(e) => set('hostRate', e.currentTarget.checked ? 1 : 0)} />
       Render at host rate
     </label>
     <label class="line">
-      <input type="checkbox" checked={s.classicVelocity === 1} data-testid="setting-classicVelocity" onchange={(e) => set('classicVelocity', e.currentTarget.checked ? 1 : 0)} />
+      <input tabindex="0" type="checkbox" checked={s.classicVelocity === 1} data-testid="setting-classicVelocity" onchange={(e) => set('classicVelocity', e.currentTarget.checked ? 1 : 0)} />
       Classic velocity scaling
     </label>
 
     <h3>Interface</h3>
     <label class="line">
-      <input type="checkbox" checked={s.keyboardPlay === 1} data-testid="setting-keyboardPlay" onchange={(e) => set('keyboardPlay', e.currentTarget.checked ? 1 : 0)} />
+      <input tabindex="0" type="checkbox" checked={s.keyboardPlay === 1} data-testid="setting-keyboardPlay" onchange={(e) => set('keyboardPlay', e.currentTarget.checked ? 1 : 0)} />
       Computer keyboard play
     </label>
     <label class="line">
@@ -97,8 +97,8 @@
     </label>
     <fieldset>
       <legend>Operator order in programmer</legend>
-      <label><input type="radio" name="opOrder" checked={s.opOrder === 0} data-testid="setting-opOrder-0" onchange={() => set('opOrder', 0)} /> OP1→OP6</label>
-      <label><input type="radio" name="opOrder" checked={s.opOrder === 1} data-testid="setting-opOrder-1" onchange={() => set('opOrder', 1)} /> OP6→OP1</label>
+      <label><input tabindex="0" type="radio" name="opOrder" checked={s.opOrder === 0} data-testid="setting-opOrder-0" onchange={() => set('opOrder', 0)} /> OP1→OP6</label>
+      <label><input tabindex="0" type="radio" name="opOrder" checked={s.opOrder === 1} data-testid="setting-opOrder-1" onchange={() => set('opOrder', 1)} /> OP6→OP1</label>
     </fieldset>
   </section>
 
@@ -116,6 +116,7 @@
     </label>
     <label class="line">
       <input
+        tabindex="0"
         type="checkbox"
         checked={store.globals.omni.v === 1}
         data-testid="setting-omni"
@@ -139,7 +140,13 @@
           <legend>MIDI inputs</legend>
           {#each env.inputs as port (port.id)}
             <label class="line" title={port.name}>
-              <input type="checkbox" checked={!!port.on} onchange={(e) => toggleInput(port.id, e.currentTarget.checked)} />
+              <input
+                tabindex="0"
+                type="checkbox"
+                checked={!!port.on}
+                data-testid="midi-input-{port.id}"
+                onchange={(e) => toggleInput(port.id, e.currentTarget.checked)}
+              />
               <span class="port">{midEllipsis(port.name)}</span>
             </label>
           {/each}

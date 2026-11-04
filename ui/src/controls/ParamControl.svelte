@@ -57,6 +57,8 @@
   let drag: DragTracker | null = null;
   let lastDragValue = 0;
   let suppressClick = false;
+  /** Value before the last single click of a toggle/choice (undone by a double-click). */
+  let preClick: { v: number; t: number } | null = null;
 
   const range = $derived<NumRange>({ min, max, offset });
   const shown = $derived(ready ? (display !== '' ? display.trim() : String(value + offset)) : '');
@@ -67,9 +69,9 @@
     if (v !== value) onchange(v, final);
   }
 
-  async function startEdit(initial: string | null): Promise<void> {
+  async function startEdit(initial: string | null, from = value): Promise<void> {
     if (disabled || !ready) return;
-    text = initial ?? String(value + offset);
+    text = initial ?? String(from + offset);
     editing = true;
     await tick();
     inputEl?.focus();
@@ -200,8 +202,18 @@
       return;
     }
     if (ev.detail > 1) return;
+    if (kind === 'number') return;
+    preClick = { v: value, t: performance.now() };
     if (kind === 'toggle') change(on ? min : max, true);
-    else if (kind === 'cycle') change(value >= max ? min : value + 1, true);
+    else change(value >= max ? min : value + 1, true);
+  }
+
+  /** Double-click enters a number; on a toggle/choice it first undoes its first click. */
+  function onDblClick(): void {
+    const restore = preClick && performance.now() - preClick.t < 800 ? preClick.v : value;
+    preClick = null;
+    change(restore, true);
+    void startEdit(null, restore);
   }
 </script>
 
@@ -232,7 +244,7 @@
   onpointercancel={endDrag}
   onlostpointercapture={endDrag}
   onclick={onClick}
-  ondblclick={() => startEdit(null)}
+  ondblclick={onDblClick}
   oncontextmenu={(ev) => ev.preventDefault()}
 >
   {#if editing}

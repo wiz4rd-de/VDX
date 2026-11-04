@@ -43,6 +43,7 @@ export async function installMidiDouble(page: Page, mode: MidiMode = 'ok'): Prom
     w.__midiInject = (bytes: number[]) => {
       if (input.onmidimessage) input.onmidimessage({ data: new Uint8Array(bytes) });
     };
+    w.__midiListening = () => input.onmidimessage !== null;
     const access = (sysex: boolean) => ({
       inputs: new Map([[input.id, input]]),
       outputs: new Map([[output.id, output]]),
@@ -105,4 +106,9 @@ export async function midiInject(page: Page, bytes: number[]): Promise<void> {
 /** Analyser RMS in dBFS (test builds expose window.__vdxTap). */
 export async function rmsDb(page: Page): Promise<number> {
   return page.evaluate(() => (window as unknown as { __vdxTap?: { rmsDb(): number } }).__vdxTap?.rmsDb() ?? -999);
+}
+
+/** Resolves once the app listens on the mocked MIDI input (after the start gesture). */
+export async function midiListening(page: Page): Promise<void> {
+  await page.waitForFunction(() => (window as unknown as { __midiListening?: () => boolean }).__midiListening?.() === true);
 }

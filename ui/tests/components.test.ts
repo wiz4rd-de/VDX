@@ -97,6 +97,21 @@ describe('R-U1 programmer control (component)', () => {
     expect(onchange).toHaveBeenLastCalledWith(1, true);
   });
 
+  it('R-U1 double-click on a toggle opens typed entry without changing the value', async () => {
+    const { el, onchange, rerender } = control({ kind: 'toggle', value: 0, display: 'OFF', max: 1 });
+    await fireEvent.click(el, { detail: 1 });
+    expect(onchange).toHaveBeenLastCalledWith(1, true);
+    // The parent re-renders with the new value before the second click of the double-click.
+    await rerender({ value: 1, display: 'ON' });
+    await fireEvent.click(el, { detail: 2 });
+    await fireEvent.dblClick(el);
+    await tick();
+    await tick();
+    expect(onchange).toHaveBeenLastCalledWith(0, true);
+    const input = el.querySelector('input') as HTMLInputElement;
+    expect(input.value).toBe('0');
+  });
+
   it('R-U1 the value is always visible and the tooltip shows name and range without changing it', async () => {
     const { el, onchange } = control({ display: ' 7' });
     expect(el.textContent?.trim()).toBe('7');

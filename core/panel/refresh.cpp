@@ -102,6 +102,10 @@ void Core::Impl::refresh() {
   uint8_t eff[156];
   editEffective(eff);
   // ---- parameters (one event per changed parameter) ----
+  bool changed[156];
+  for (int i = 0; i < 156; ++i) changed[i] = eff[i] != lastEff[i];
+  bool fnChanged[14];
+  for (int k = 0; k < 14; ++k) fnChanged[k] = ps.fn[k] != lastFn[k];
   for (int i = 0; i < 156; ++i) {
     if (eff[i] == lastEff[i]) continue;
     lastEff[i] = eff[i];
@@ -125,6 +129,37 @@ void Core::Impl::refresh() {
     fmt::functionString(ps.fn, kFnFirst + k, ps.fn[k], e.text);
     push(e);
     if (tx) queueTx(156 + k);
+  }
+  // ---- dependent display strings (R-P8) ----
+  // Coarse/fine strings depend on their operator's mode, coarse and fine;
+  // bend range shows 12 while step > 0; porta mode names depend on mono.
+  // Unchanged dependents get a ParamText event (not a parameter change).
+  for (int op = 1; op <= 6; ++op) {
+    const int m = opParam(op, kOpMode), co = opParam(op, kOpCoarse), fi = opParam(op, kOpFine);
+    if (!(changed[m] || changed[co] || changed[fi])) continue;
+    for (int i : {co, fi}) {
+      if (changed[i]) continue;
+      Event e;
+      e.type = EvType::ParamText;
+      e.src = src;
+      e.a = i;
+      e.b = eff[i];
+      e.c = 0;
+      fmt::voiceString(eff, i, eff[i], e.text);
+      push(e);
+    }
+  }
+  const int dependents[2][2] = {{kFnBendStep, kFnBendRange}, {kFnMono, kFnPortaMode}};
+  for (const auto& d : dependents) {
+    if (!fnChanged[d[0] - kFnFirst] || fnChanged[d[1] - kFnFirst]) continue;
+    Event e;
+    e.type = EvType::ParamText;
+    e.src = src;
+    e.a = d[1];
+    e.b = ps.fn[d[1] - kFnFirst];
+    e.c = 1;
+    fmt::functionString(ps.fn, d[1], e.b, e.text);
+    push(e);
   }
   for (int g = 0; g < 7; ++g) {
     if (ps.globals[g] == lastGlobals[g]) continue;

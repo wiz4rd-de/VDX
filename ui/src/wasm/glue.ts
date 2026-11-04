@@ -193,6 +193,11 @@ class WebGlue implements Backend {
   }
 
   command(cmd: object): void {
+    // Bring the main-thread clock up to now first, so a command is applied at
+    // the wall-clock time it was sent even after a main-thread stall (otherwise
+    // the catch-up render that follows would run the command's first moments,
+    // e.g. the 1.5 s splash, in zero wall time).
+    this.catchUp();
     const p = this.m.stringToNewUTF8(JSON.stringify(cmd));
     const reply = this.m.UTF8ToString(this.m._vdx_command(p));
     this.m._free(p);
@@ -219,13 +224,18 @@ class WebGlue implements Backend {
     this.listener(events);
   }
 
-  private tick(): void {
+  /** Main-thread rendering while no AudioWorklet runs: render the wall time elapsed since the last pump. */
+  private catchUp(): void {
     const now = performance.now();
-    if (!this.audioRunning) {
+    if (!this.audioRunning && this.m._vdx_audio_state() !== 2) {
       const frames = Math.min(16384, Math.round(((now - this.lastPump) / 1000) * this.pumpRate));
       if (frames > 0) this.m._vdx_pump(frames);
     }
     this.lastPump = now;
+  }
+
+  private tick(): void {
+    this.catchUp();
     const json = this.m.UTF8ToString(this.m._vdx_poll());
     if (json) this.deliver(JSON.parse(json) as VdxEvent[]);
     this.handleExports();
@@ -467,11 +477,15 @@ class WebGlue implements Backend {
   // ---- start gesture ----
   onStartGesture(): void {
     this.started = true;
-    void this.startAudio();
+    // The splash repaints the LCD and blanks the LED (F-1.3); re-delivering the
+    // held pre-gesture LCD/LED here would flash the PLAY page before it.
+    this.heldLcd = null;
+    this.heldLed = null;
     void this.startMidi();
-    this.command({ t: 'startSplash' });
-    const held = [this.heldLcd, this.heldLed].filter((e): e is VdxEvent => e !== null);
-    if (held.length && this.listener) this.listener(held);
+    // F-1.3: start audio, then show the splash. The core times the splash on
+    // the audio clock, so it starts once the worklet renders (or audio failed
+    // and the main thread renders) — not during the AudioContext start-up.
+    void this.startAudio().finally(() => this.command({ t: 'startSplash' }));
   }
 }
 
