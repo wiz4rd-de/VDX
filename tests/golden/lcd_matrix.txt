@@ -1,0 +1,269 @@
+# AC-P2.1 LCD golden matrix, written by hand from SPEC §5.3 (not generated).
+#
+# Each line:  id | setup | "line 1" | "line 2" | cursor
+#   setup   space-separated steps from the first-run state (PLAY, INT 1 INIT VOICE, CLEAN):
+#           1..32           press that numbered button
+#           INT CRT EDIT FUNC STORE PINT PCRT OPSEL NO YES   press that button
+#           h:i=v           host automation of voice parameter i (no mode change, R-S2)
+#           p:i=v           programmer change of voice parameter i (F-3)
+#           f:n=v           host automation of function parameter n
+#           g:id=v          programmer change of panel global id (vdx::Global)
+#           d:x             data-entry slider at position x
+#           w:ms            wait (render) ms milliseconds
+#           crt             New cartridge (UNTITLED, 32 x INIT VOICE)
+#           splash          start the power-on splash
+#           reset           load a corrupt state blob, run the splash, wait 1.6 s
+#           reject          a rejected file (FORMAT CONFLICT!)
+#           badsum          a file-loaded voice with a checksum mismatch
+#           rxvoice         a single-voice dump received over MIDI
+#           note:n          MIDI note n on and off (channel 1)
+#           -               nothing
+#   cursor  - (none) or row,col of the blinking cursor
+#
+# Reference values: INIT VOICE (R-P10) is algorithm 1, OP1 output level 99, all
+# rates 99, levels 99/99/99/0, break point 0, coarse 1, fine 0, detune 7, LFO
+# speed 35, key sync on, wave triangle, P MOD SENS 3, transpose 24, pitch EG
+# levels 50. Function defaults (§4.2): poly, bend range 2, step 0, wheel range
+# 99 with pitch assigned. INT 2..9 = E.PIANO BELL BASS BRASS ORGAN MARIMBA
+# STRINGS PAD (§15.3). Voice parameter index of OP1 byte k = 105 + k.
+
+# ---- PLAY (§5.3.1) -------------------------------------------------------------
+play_clean            | -                         | "INTERNAL VOICE  " | "INT 1 INIT VOICE" | -
+play_edited           | h:134=4                   | "INTERNAL VOICE  " | "INT 1 INIT VOICE" | 1,6
+play_edited_name      | 2 h:145=88                | "INTERNAL VOICE  " | "INT 2 X.PIANO   " | 1,6
+play_slot5            | 5                         | "INTERNAL VOICE  " | "INT 5 BRASS     " | -
+play_slot9            | 9                         | "INTERNAL VOICE  " | "INT 9 PAD       " | -
+play_slot32           | 32                        | "INTERNAL VOICE  " | "INT32 INIT VOICE" | -
+play_crt_selected     | crt CRT                   | "CARTRIDGE VOICE " | "INT 1 INIT VOICE" | -
+play_crt_slot         | crt CRT 2                 | "CARTRIDGE VOICE " | "CRT 2 INIT VOICE" | -
+play_comparing        | 2 h:145=88 EDIT EDIT      | "INTERNAL VOICE  " | "INT 2 E.PIANO   " | -
+play_compare_crt      | crt CRT 3 h:16=50 EDIT EDIT | "CARTRIDGE VOICE " | "CRT 3 INIT VOICE" | -
+play_compare_ends     | 2 h:145=88 EDIT EDIT EDIT | "ALG 5 111111    " | "ALGORITHM SELECT" | -
+
+# ---- EDIT line 1 (§5.3.2) -----------------------------------------------------------
+edit_l1_example       | h:134=4 EDIT 27 OPSEL OPSEL OPSEL | "ALG 5 111111 OP4" | "OUTPUT LEVEL = 0" | -
+edit_l1_mask          | EDIT 2 4                  | "ALG 1 101011    " | "ALGORITHM SELECT" | -
+edit_l1_mask_all_off  | EDIT 1 2 3 4 5 6          | "ALG 1 000000    " | "ALGORITHM SELECT" | -
+edit_btn1to6_keeps_l2 | EDIT 10 3                 | "ALG 1 110111    " | "LFO SPEED    =35" | -
+
+# ---- EDIT pages (§5.3.2), min / max / mid -------------------------------------------
+edit7_min             | EDIT                      | "ALG 1 111111    " | "ALGORITHM SELECT" | -
+edit7_max             | h:134=31 EDIT             | "ALG32 111111    " | "ALGORITHM SELECT" | -
+edit7_mid             | h:134=15 EDIT             | "ALG16 111111    " | "ALGORITHM SELECT" | -
+edit8_min             | EDIT 8                    | "ALG 1 111111    " | "FEEDBACK     = 0" | -
+edit8_max             | h:135=7 EDIT 8            | "ALG 1 111111    " | "FEEDBACK     = 7" | -
+edit8_mid             | h:135=3 EDIT 8            | "ALG 1 111111    " | "FEEDBACK     = 3" | -
+edit9_tri             | EDIT 9                    | "ALG 1 111111    " | "LFO WAVE=TRIANGL" | -
+edit9_sawdn           | h:142=1 EDIT 9            | "ALG 1 111111    " | "LFO WAVE=SAW DWN" | -
+edit9_sawup           | h:142=2 EDIT 9            | "ALG 1 111111    " | "LFO WAVE=SAW UP " | -
+edit9_square          | h:142=3 EDIT 9            | "ALG 1 111111    " | "LFO WAVE=SQUARE " | -
+edit9_sine            | h:142=4 EDIT 9            | "ALG 1 111111    " | "LFO WAVE=SINE   " | -
+edit9_sh              | h:142=5 EDIT 9            | "ALG 1 111111    " | "LFO WAVE=S/HOLD " | -
+edit10_default        | EDIT 10                   | "ALG 1 111111    " | "LFO SPEED    =35" | -
+edit10_min            | h:137=0 EDIT 10           | "ALG 1 111111    " | "LFO SPEED    = 0" | -
+edit10_max            | h:137=99 EDIT 10          | "ALG 1 111111    " | "LFO SPEED    =99" | -
+edit11_min            | EDIT 11                   | "ALG 1 111111    " | "LFO DELAY    = 0" | -
+edit11_max            | h:138=99 EDIT 11          | "ALG 1 111111    " | "LFO DELAY    =99" | -
+edit11_mid            | h:138=50 EDIT 11          | "ALG 1 111111    " | "LFO DELAY    =50" | -
+edit12_min            | EDIT 12                   | "ALG 1 111111    " | "LFO PM DEPTH = 0" | -
+edit12_max            | h:139=99 EDIT 12          | "ALG 1 111111    " | "LFO PM DEPTH =99" | -
+edit12_mid            | h:139=42 EDIT 12          | "ALG 1 111111    " | "LFO PM DEPTH =42" | -
+edit13_min            | EDIT 13                   | "ALG 1 111111    " | "LFO AM DEPTH = 0" | -
+edit13_max            | h:140=99 EDIT 13          | "ALG 1 111111    " | "LFO AM DEPTH =99" | -
+edit13_mid            | h:140=7 EDIT 13           | "ALG 1 111111    " | "LFO AM DEPTH = 7" | -
+edit14_on             | EDIT 14                   | "ALG 1 111111    " | "LFO KEY SYNC=ON " | -
+edit14_off            | h:141=0 EDIT 14           | "ALG 1 111111    " | "LFO KEY SYNC=OFF" | -
+edit15_default        | EDIT 15                   | "ALG 1 111111    " | "P MOD SENS.  = 3" | -
+edit15_min            | h:143=0 EDIT 15           | "ALG 1 111111    " | "P MOD SENS.  = 0" | -
+edit15_max            | h:143=7 EDIT 15           | "ALG 1 111111    " | "P MOD SENS.  = 7" | -
+edit16_min            | EDIT 16                   | "ALG 1 111111 OP1" | "A MOD SENS.  = 0" | -
+edit16_max            | h:119=3 EDIT 16           | "ALG 1 111111 OP1" | "A MOD SENS.  = 3" | -
+edit16_mid            | h:119=1 EDIT 16           | "ALG 1 111111 OP1" | "A MOD SENS.  = 1" | -
+edit17_ratio          | EDIT 17                   | "ALG 1 111111 OP1" | "FREQUENCY(RATIO)" | -
+edit17_fixed          | h:122=1 EDIT 17           | "ALG 1 111111 OP1" | "FIXED FREQ.(Hz) " | -
+edit17_sync_on        | EDIT 17 17                | "ALG 1 111111    " | "OSC KEY SYNC=ON " | -
+edit17_sync_off       | h:136=0 EDIT 17 17        | "ALG 1 111111    " | "OSC KEY SYNC=OFF" | -
+edit17_back_to_mode   | EDIT 17 17 17             | "ALG 1 111111 OP1" | "FREQUENCY(RATIO)" | -
+edit18_ratio_default  | EDIT 18                   | "ALG 1 111111 OP1" | "F COARSE= 1.00  " | -
+edit18_ratio_min      | h:123=0 EDIT 18           | "ALG 1 111111 OP1" | "F COARSE= 0.50  " | -
+edit18_ratio_max      | h:123=31 EDIT 18          | "ALG 1 111111 OP1" | "F COARSE=31.00  " | -
+edit18_ratio_maxfine  | h:123=31 h:124=99 EDIT 18 | "ALG 1 111111 OP1" | "F COARSE=61.69  " | -
+edit18_ratio_c0_fine  | h:123=0 h:124=99 EDIT 18  | "ALG 1 111111 OP1" | "F COARSE= 0.99  " | -
+edit18_ratio_mid      | h:123=2 h:124=50 EDIT 18  | "ALG 1 111111 OP1" | "F COARSE= 3.00  " | -
+edit18_fixed_1hz      | h:122=1 h:123=0 EDIT 18   | "ALG 1 111111 OP1" | "F COARSE=1.000Hz" | -
+edit18_fixed_10hz     | h:122=1 EDIT 18           | "ALG 1 111111 OP1" | "F COARSE=10.00Hz" | -
+edit18_fixed_100hz    | h:122=1 h:123=2 EDIT 18   | "ALG 1 111111 OP1" | "F COARSE=100.0Hz" | -
+edit18_fixed_1000hz   | h:122=1 h:123=3 EDIT 18   | "ALG 1 111111 OP1" | "F COARSE=1000 Hz" | -
+edit18_fixed_max      | h:122=1 h:123=31 h:124=99 EDIT 18 | "ALG 1 111111 OP1" | "F COARSE=9772 Hz" | -
+edit18_fixed_mid      | h:122=1 h:123=0 h:124=50 EDIT 18 | "ALG 1 111111 OP1" | "F COARSE=3.162Hz" | -
+edit19_default        | EDIT 19                   | "ALG 1 111111 OP1" | "F FINE  = 1.00  " | -
+edit19_max            | h:124=99 EDIT 19          | "ALG 1 111111 OP1" | "F FINE  = 1.99  " | -
+edit19_mid            | h:124=25 EDIT 19          | "ALG 1 111111 OP1" | "F FINE  = 1.25  " | -
+edit19_fixed_max      | h:122=1 h:123=0 h:124=99 EDIT 19 | "ALG 1 111111 OP1" | "F FINE  =9.772Hz" | -
+edit20_default        | EDIT 20                   | "ALG 1 111111 OP1" | "OSC DETUNE   = 0" | -
+edit20_min            | h:125=0 EDIT 20           | "ALG 1 111111 OP1" | "OSC DETUNE   =-7" | -
+edit20_max            | h:125=14 EDIT 20          | "ALG 1 111111 OP1" | "OSC DETUNE   =+7" | -
+edit20_plus1          | h:125=8 EDIT 20           | "ALG 1 111111 OP1" | "OSC DETUNE   =+1" | -
+edit20_minus1         | h:125=6 EDIT 20           | "ALG 1 111111 OP1" | "OSC DETUNE   =-1" | -
+edit21_s1_max         | EDIT 21                   | "ALG 1 111111 OP1" | "EG  RATE  1  =99" | -
+edit21_s1_min         | h:105=0 EDIT 21           | "ALG 1 111111 OP1" | "EG  RATE  1  = 0" | -
+edit21_s2_mid         | h:106=50 EDIT 21 21       | "ALG 1 111111 OP1" | "EG  RATE  2  =50" | -
+edit21_s3             | EDIT 21 21 21             | "ALG 1 111111 OP1" | "EG  RATE  3  =99" | -
+edit21_s4             | EDIT 21 21 21 21          | "ALG 1 111111 OP1" | "EG  RATE  4  =99" | -
+edit21_wraps          | EDIT 21 21 21 21 21       | "ALG 1 111111 OP1" | "EG  RATE  1  =99" | -
+edit22_s1_max         | EDIT 22                   | "ALG 1 111111 OP1" | "EG  LEVEL 1  =99" | -
+edit22_s4_min         | EDIT 22 22 22 22          | "ALG 1 111111 OP1" | "EG  LEVEL 4  = 0" | -
+edit22_s3_mid         | h:111=40 EDIT 22 22 22    | "ALG 1 111111 OP1" | "EG  LEVEL 3  =40" | -
+edit22_shared_stage   | EDIT 21 21 22             | "ALG 1 111111 OP1" | "EG  LEVEL 2  =99" | -
+edit23_min            | EDIT 23                   | "ALG 1 111111 OP1" | "BREAK POINT=A -1" | -
+edit23_c3             | h:113=39 EDIT 23          | "ALG 1 111111 OP1" | "BREAK POINT=C 3 " | -
+edit23_max            | h:113=99 EDIT 23          | "ALG 1 111111 OP1" | "BREAK POINT=C 8 " | -
+edit23_mid            | h:113=50 EDIT 23          | "ALG 1 111111 OP1" | "BREAK POINT=B 3 " | -
+edit23_sharp          | h:113=1 EDIT 23           | "ALG 1 111111 OP1" | "BREAK POINT=A#-1" | -
+edit24_l_min          | EDIT 24                   | "ALG 1 111111 OP1" | "L KEY SCALE=-LIN" | -
+edit24_l_max          | h:116=3 EDIT 24           | "ALG 1 111111 OP1" | "L KEY SCALE=+LIN" | -
+edit24_l_mid          | h:116=1 EDIT 24           | "ALG 1 111111 OP1" | "L KEY SCALE=-EXP" | -
+edit24_r_min          | EDIT 24 24                | "ALG 1 111111 OP1" | "R KEY SCALE=-LIN" | -
+edit24_r_example      | h:117=2 EDIT 24 24        | "ALG 1 111111 OP1" | "R KEY SCALE=+EXP" | -
+edit25_l_min          | EDIT 25                   | "ALG 1 111111 OP1" | "L SCALE DEPTH= 0" | -
+edit25_l_mid          | h:114=50 EDIT 25          | "ALG 1 111111 OP1" | "L SCALE DEPTH=50" | -
+edit25_r_max          | h:115=99 EDIT 25 25       | "ALG 1 111111 OP1" | "R SCALE DEPTH=99" | -
+edit25_shared_side    | EDIT 24 24 25             | "ALG 1 111111 OP1" | "R SCALE DEPTH= 0" | -
+edit26_min            | EDIT 26                   | "ALG 1 111111 OP1" | "RATE SCALING = 0" | -
+edit26_max            | h:118=7 EDIT 26           | "ALG 1 111111 OP1" | "RATE SCALING = 7" | -
+edit26_mid            | h:118=4 EDIT 26           | "ALG 1 111111 OP1" | "RATE SCALING = 4" | -
+edit27_max            | EDIT 27                   | "ALG 1 111111 OP1" | "OUTPUT LEVEL =99" | -
+edit27_min            | EDIT 27 OPSEL             | "ALG 1 111111 OP2" | "OUTPUT LEVEL = 0" | -
+edit27_mid            | h:121=60 EDIT 27          | "ALG 1 111111 OP1" | "OUTPUT LEVEL =60" | -
+edit28_min            | EDIT 28                   | "ALG 1 111111 OP1" | "KEY VELOCITY = 0" | -
+edit28_max            | h:120=7 EDIT 28           | "ALG 1 111111 OP1" | "KEY VELOCITY = 7" | -
+edit28_mid            | h:120=3 EDIT 28           | "ALG 1 111111 OP1" | "KEY VELOCITY = 3" | -
+edit29_s1_max         | EDIT 29                   | "ALG 1 111111    " | "P EG RATE  1 =99" | -
+edit29_s1_min         | h:126=0 EDIT 29           | "ALG 1 111111    " | "P EG RATE  1 = 0" | -
+edit29_s3_mid         | h:128=33 EDIT 29 29 29    | "ALG 1 111111    " | "P EG RATE  3 =33" | -
+edit30_s1_example     | EDIT 30                   | "ALG 1 111111    " | "P EG LEVEL 1 =50" | -
+edit30_s1_max         | h:130=99 EDIT 30          | "ALG 1 111111    " | "P EG LEVEL 1 =99" | -
+edit30_s4_min         | h:133=0 EDIT 30 30 30 30  | "ALG 1 111111    " | "P EG LEVEL 4 = 0" | -
+edit30_shared_stage   | EDIT 29 29 30             | "ALG 1 111111    " | "P EG LEVEL 2 =50" | -
+edit31_default        | EDIT 31                   | "ALG 1 111111    " | "MIDDLE C = C 3  " | -
+edit31_min            | h:144=0 EDIT 31           | "ALG 1 111111    " | "MIDDLE C = C 1  " | -
+edit31_max            | h:144=48 EDIT 31          | "ALG 1 111111    " | "MIDDLE C = C 5  " | -
+edit31_sharp          | h:144=13 EDIT 31          | "ALG 1 111111    " | "MIDDLE C = C#2  " | -
+edit31_key_transpose  | EDIT 31 note:48           | "ALG 1 111111    " | "MIDDLE C = C 2  " | -
+edit32_page           | EDIT 32 FUNC              | "ALG 1 111111    " | "NAME= INIT VOICE" | -
+edit32_naming         | EDIT 32                   | "ALG 1 111111    " | "NAME= INIT VOICE" | 1,6
+edit32_typed          | EDIT 32 11 12             | "ALG 1 111111    " | "NAME= ABIT VOICE" | 1,8
+edit32_cursor_end     | EDIT 32 YES YES YES YES YES YES YES YES YES YES | "ALG 1 111111    " | "NAME= INIT VOICE" | 1,15
+edit32_cursor_left    | EDIT 32 YES YES NO        | "ALG 1 111111    " | "NAME= INIT VOICE" | 1,7
+edit32_nonprintable   | h:145=0 h:154=127 EDIT 32 FUNC | "ALG 1 111111    " | "NAME=  NIT VOIC " | -
+
+# ---- FUNCTION pages (§5.3.3), min / max / mid -----------------------------------------
+fn1                   | FUNC                      | "FUNCTION CONTROL" | "MASTER TUNE ADJ " | -
+fn2_poly              | FUNC 2                    | "FUNCTION CONTROL" | "POLY MODE       " | -
+fn2_mono              | f:64=1 FUNC 2             | "FUNCTION CONTROL" | "MONO MODE       " | -
+fn3_default           | FUNC 3                    | "FUNCTION CONTROL" | "P BEND RANGE= 2 " | -
+fn3_min               | f:65=0 FUNC 3             | "FUNCTION CONTROL" | "P BEND RANGE= 0 " | -
+fn3_max               | f:65=12 FUNC 3            | "FUNCTION CONTROL" | "P BEND RANGE=12 " | -
+fn3_step              | f:66=1 FUNC 3             | "FUNCTION CONTROL" | "P BEND RANGE=12 " | -
+fn4_min               | FUNC 4                    | "FUNCTION CONTROL" | "P BEND STEP= 0  " | -
+fn4_max               | f:66=12 FUNC 4            | "FUNCTION CONTROL" | "P BEND STEP=12  " | -
+fn4_mid               | f:66=5 FUNC 4             | "FUNCTION CONTROL" | "P BEND STEP= 5  " | -
+fn5_retain            | FUNC 5                    | "FUNCTION CONTROL" | "SUS-KEY P RETAIN" | -
+fn5_follow            | f:67=1 FUNC 5             | "FUNCTION CONTROL" | "SUS-KEY P FOLLOW" | -
+fn5_fingered          | f:64=1 FUNC 5             | "FUNCTION CONTROL" | "FINGERED PORTA  " | -
+fn5_fulltime          | f:64=1 f:67=1 FUNC 5      | "FUNCTION CONTROL" | "FULL TIME PORTA " | -
+fn6_off               | FUNC 6                    | "FUNCTION CONTROL" | "GLISSANDO=OFF   " | -
+fn6_on                | f:68=1 FUNC 6             | "FUNCTION CONTROL" | "GLISSANDO=ON    " | -
+fn7_min               | FUNC 7                    | "FUNCTION CONTROL" | "PORTA TIME= 0   " | -
+fn7_max               | f:69=99 FUNC 7            | "FUNCTION CONTROL" | "PORTA TIME=99   " | -
+fn7_mid               | f:69=50 FUNC 7            | "FUNCTION CONTROL" | "PORTA TIME=50   " | -
+fn8_ch_min            | FUNC 8                    | "FUNCTION CONTROL" | "MIDI CH= 1      " | -
+fn8_ch_max            | g:1=16 FUNC 8             | "FUNCTION CONTROL" | "MIDI CH=16      " | -
+fn8_ch_mid            | g:1=9 FUNC 8              | "FUNCTION CONTROL" | "MIDI CH= 9      " | -
+fn8_unavail           | FUNC 8 8                  | "FUNCTION CONTROL" | "SYS INFO UNAVAIL" | -
+fn8_avail             | g:3=1 FUNC 8 8            | "FUNCTION CONTROL" | "SYS INFO AVAIL  " | -
+fn8_avail_yes         | FUNC 8 8 YES              | "FUNCTION CONTROL" | "SYS INFO AVAIL  " | -
+fn8_transmit          | g:3=1 FUNC 8 8 8          | "FUNCTION CONTROL" | " MIDI TRANSMIT ?" | -
+fn8_skip_transmit     | FUNC 8 8 8                | "FUNCTION CONTROL" | "MIDI CH= 1      " | -
+fn9_question          | FUNC 9                    | "FUNCTION CONTROL" | "EDIT RECALL ?   " | -
+fn9_sure              | FUNC 9 YES                | "FUNCTION CONTROL" | " ARE YOU SURE ? " | -
+fn9_no                | FUNC 9 YES NO             | "FUNCTION CONTROL" | "EDIT RECALL ?   " | -
+fn10_question         | FUNC 10                   | "FUNCTION CONTROL" | "VOICE INIT ?    " | -
+fn10_sure             | FUNC 10 YES               | "FUNCTION CONTROL" | " ARE YOU SURE ? " | -
+fn11_question         | FUNC 11                   | "FUNCTION CONTROL" | "CARTRIDGE FORM ?" | -
+fn11_sure             | FUNC 11 YES               | "FUNCTION CONTROL" | " ARE YOU SURE ? " | -
+fn12_no_effect        | FUNC 7 12                 | "FUNCTION CONTROL" | "PORTA TIME= 0   " | -
+fn13_no_effect        | FUNC 3 13                 | "FUNCTION CONTROL" | "P BEND RANGE= 2 " | -
+fn14                  | FUNC 14                   | "FUNCTION CONTROL" | "BATTERY VOLT=3.0" | -
+fn15_question         | FUNC 15                   | " SAVE MEMORY    " | " ALL OF MEMORY ?" | -
+fn15_sure             | FUNC 15 YES               | " SAVE MEMORY    " | " ARE YOU SURE ? " | -
+fn16_question         | FUNC 16                   | " LOAD MEMORY    " | " ALL OF MEMORY ?" | -
+fn16_sure             | FUNC 16 YES               | " LOAD MEMORY    " | " ARE YOU SURE ? " | -
+fn17_max              | FUNC 17                   | "FUNCTION CONTROL" | "WHEEL  RANGE=99 " | -
+fn17_min              | f:70=0 FUNC 17            | "FUNCTION CONTROL" | "WHEEL  RANGE= 0 " | -
+fn17_mid              | f:70=50 FUNC 17           | "FUNCTION CONTROL" | "WHEEL  RANGE=50 " | -
+fn18_on               | FUNC 18                   | "FUNCTION CONTROL" | "WHEEL  PITCH=ON " | -
+fn18_off              | f:71=0 FUNC 18            | "FUNCTION CONTROL" | "WHEEL  PITCH=OFF" | -
+fn19_off              | FUNC 19                   | "FUNCTION CONTROL" | "WHEEL  AMP  =OFF" | -
+fn19_on               | f:71=2 FUNC 19            | "FUNCTION CONTROL" | "WHEEL  AMP  =ON " | -
+fn20_off              | FUNC 20                   | "FUNCTION CONTROL" | "WHEEL  EG B.=OFF" | -
+fn20_on               | f:71=4 FUNC 20            | "FUNCTION CONTROL" | "WHEEL  EG B.=ON " | -
+fn21_min              | FUNC 21                   | "FUNCTION CONTROL" | "FOOT   RANGE= 0 " | -
+fn21_max              | f:72=99 FUNC 21           | "FUNCTION CONTROL" | "FOOT   RANGE=99 " | -
+fn21_mid              | f:72=33 FUNC 21           | "FUNCTION CONTROL" | "FOOT   RANGE=33 " | -
+fn22_off              | FUNC 22                   | "FUNCTION CONTROL" | "FOOT   PITCH=OFF" | -
+fn22_on               | f:73=1 FUNC 22            | "FUNCTION CONTROL" | "FOOT   PITCH=ON " | -
+fn23_off              | FUNC 23                   | "FUNCTION CONTROL" | "FOOT   AMP  =OFF" | -
+fn23_on               | f:73=2 FUNC 23            | "FUNCTION CONTROL" | "FOOT   AMP  =ON " | -
+fn24_off              | FUNC 24                   | "FUNCTION CONTROL" | "FOOT   EG B.=OFF" | -
+fn24_on               | f:73=4 FUNC 24            | "FUNCTION CONTROL" | "FOOT   EG B.=ON " | -
+fn25_min              | FUNC 25                   | "FUNCTION CONTROL" | "BREATH RANGE= 0 " | -
+fn25_max              | f:74=99 FUNC 25           | "FUNCTION CONTROL" | "BREATH RANGE=99 " | -
+fn26_off              | FUNC 26                   | "FUNCTION CONTROL" | "BREATH PITCH=OFF" | -
+fn26_on               | f:75=1 FUNC 26            | "FUNCTION CONTROL" | "BREATH PITCH=ON " | -
+fn27_off              | FUNC 27                   | "FUNCTION CONTROL" | "BREATH AMP  =OFF" | -
+fn27_on               | f:75=2 FUNC 27            | "FUNCTION CONTROL" | "BREATH AMP  =ON " | -
+fn28_off              | FUNC 28                   | "FUNCTION CONTROL" | "BREATH EG B.=OFF" | -
+fn28_example          | f:75=4 FUNC 28            | "FUNCTION CONTROL" | "BREATH EG B.=ON " | -
+fn29_min              | FUNC 29                   | "FUNCTION CONTROL" | "AFTER  RANGE= 0 " | -
+fn29_max              | f:76=99 FUNC 29           | "FUNCTION CONTROL" | "AFTER  RANGE=99 " | -
+fn30_off              | FUNC 30                   | "FUNCTION CONTROL" | "AFTER  PITCH=OFF" | -
+fn30_on               | f:77=1 FUNC 30            | "FUNCTION CONTROL" | "AFTER  PITCH=ON " | -
+fn31_off              | FUNC 31                   | "FUNCTION CONTROL" | "AFTER  AMP  =OFF" | -
+fn31_on               | f:77=7 FUNC 31            | "FUNCTION CONTROL" | "AFTER  AMP  =ON " | -
+fn32_off              | FUNC 32                   | "FUNCTION CONTROL" | "AFTER  EG B.=OFF" | -
+fn32_on               | f:77=7 FUNC 32            | "FUNCTION CONTROL" | "AFTER  EG B.=ON " | -
+
+# ---- Dialogs (§5.3.4) ------------------------------------------------------------------
+dlg_protect_int_on    | PINT                      | " MEMORY PROTECT " | " INTERNAL    ON " | -
+dlg_protect_int_off   | PINT NO                   | " MEMORY PROTECT " | " INTERNAL    OFF" | -
+dlg_protect_crt_on    | PCRT                      | " MEMORY PROTECT " | " CARTRIDGE   ON " | -
+dlg_protect_crt_off   | PCRT NO                   | " MEMORY PROTECT " | " CARTRIDGE   OFF" | -
+dlg_protect_edit      | EDIT 27 PINT              | " MEMORY PROTECT " | " INTERNAL    ON " | -
+dlg_protect_function  | FUNC PCRT NO YES          | " MEMORY PROTECT " | " CARTRIDGE   ON " | -
+dlg_protect_ends      | EDIT 27 PINT 8            | "ALG 1 111111    " | "FEEDBACK     = 0" | -
+dlg_store             | STORE                     | "INTERNAL VOICE  " | " MEMORY STORE   " | -
+dlg_store_crt         | crt CRT STORE             | "CARTRIDGE VOICE " | " MEMORY STORE   " | -
+dlg_store_cancel      | STORE STORE               | "INTERNAL VOICE  " | "INT 1 INIT VOICE" | -
+dlg_egcopy            | EDIT STORE                | " EG COPY        " | "from OP1 to OP? " | -
+dlg_egcopy_op3        | EDIT OPSEL OPSEL STORE    | " EG COPY        " | "from OP3 to OP? " | -
+dlg_egcopy_done       | EDIT 27 STORE 4           | "ALG 1 111111 OP1" | "OUTPUT LEVEL =99" | -
+dlg_confirm           | FUNC 16 YES               | " LOAD MEMORY    " | " ARE YOU SURE ? " | -
+
+# ---- Messages (§5.3.5) ------------------------------------------------------------------
+msg_protected         | STORE 5                   | "INTERNAL VOICE  " | "MEMORY PROTECTED" | -
+msg_protected_fn      | crt FUNC 11 YES YES       | "FUNCTION CONTROL" | "MEMORY PROTECTED" | -
+msg_format            | reject                    | "INTERNAL VOICE  " | "FORMAT CONFLICT!" | -
+msg_format_edit       | EDIT 27 reject            | "ALG 1 111111 OP1" | "FORMAT CONFLICT!" | -
+msg_checksum          | badsum                    | "INTERNAL VOICE  " | "CHECK SUM ERROR!" | -
+msg_midi_received     | g:3=1 rxvoice             | "INTERNAL VOICE  " | " MIDI RECEIVED  " | -
+msg_completed         | FUNC 10 YES YES           | "FUNCTION CONTROL" | " COMPLETED      " | -
+msg_completed_after   | FUNC 10 YES YES w:2100    | "FUNCTION CONTROL" | "VOICE INIT ?    " | -
+msg_state_reset       | reset                     | "INTERNAL VOICE  " | "  STATE RESET   " | -
+msg_not_ready         | CRT                       | "   NOT READY !  " | "INSERT CARTRIDGE" | -
+msg_not_ready_fn      | FUNC 15 YES YES           | "   NOT READY !  " | "INSERT CARTRIDGE" | -
+msg_expires           | reject w:2100             | "INTERNAL VOICE  " | "INT 1 INIT VOICE" | -
+msg_dismissed         | reject EDIT               | "ALG 1 111111    " | "ALGORITHM SELECT" | -
+splash                | splash                    | "      VDX       " | " FM SYNTHESIZER " | -
+splash_then_play      | splash w:1600             | "INTERNAL VOICE  " | "INT 1 INIT VOICE" | -
+splash_ignores_panel  | splash EDIT FUNC 9        | "      VDX       " | " FM SYNTHESIZER " | -

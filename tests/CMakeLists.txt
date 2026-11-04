@@ -36,6 +36,8 @@ if(Python3_FOUND)
            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
   add_test(NAME "AC-E3.2_tables_match_generator" COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/gen_tables.py --check
            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  add_test(NAME "AC-D7.1_default_bank_matches_json" COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/make_default_bank.py --check
+           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
   set_tests_properties("AC-L1.1_licence_check_and_planted_phrase" "AC-L4.1_licenses_doc_lists_every_component"
                        "AC-L5.1_no_vendor_branding" "AC-E3.2_tables_match_generator" PROPERTIES LABELS "licence")
 endif()

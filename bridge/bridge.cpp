@@ -541,6 +541,10 @@ std::string Bridge::handle(const std::string& json) {
   } else if (t == "sendBank") send(CmdType::SendBank, Source::BankManager);
   else if (t == "requestDump") send(CmdType::RequestDump, Source::BankManager);
   else if (t == "snapshot") send(CmdType::RequestSnapshot, Source::Internal);
+  else if (t == "startSplash") send(CmdType::StartSplash, Source::Internal);
+  else if (t == "exportDone") {
+    if (j.str("what") == "crt") send(CmdType::ClearCartridgeChanged, Source::BankManager);
+  }
   else if (t == "importFile") {
     std::vector<uint8_t> bytes;
     if (!base64Decode(j.str("b64"), bytes)) bytes.clear();
