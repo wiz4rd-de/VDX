@@ -25,9 +25,17 @@ else()
 endif()
 set_tests_properties(vdx_tests PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-# Licence and branding checks (R-L3, AC-L1.1, AC-L4.1, AC-L5.1) run with Python.
+# Licence and branding checks (R-L3, R-L4, R-L5) run with Python.
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)
-  add_test(NAME licence_check COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/licence_check.py --self-test
+  add_test(NAME "AC-L1.1_licence_check_and_planted_phrase" COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/licence_check.py --self-test
            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  add_test(NAME "AC-L4.1_licenses_doc_lists_every_component" COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/licence_check.py --licenses
+           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  add_test(NAME "AC-L5.1_no_vendor_branding" COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/licence_check.py --branding
+           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  add_test(NAME "AC-E3.2_tables_match_generator" COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/gen_tables.py --check
+           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  set_tests_properties("AC-L1.1_licence_check_and_planted_phrase" "AC-L4.1_licenses_doc_lists_every_component"
+                       "AC-L5.1_no_vendor_branding" "AC-E3.2_tables_match_generator" PROPERTIES LABELS "licence")
 endif()
