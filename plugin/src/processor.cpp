@@ -591,9 +591,9 @@ void VdxProcessor::pickFile() {
                           std::vector<uint8_t> bytes;
                           // R-D4: files larger than 1 MiB are rejected; read at most one byte more.
                           if (auto in = f.createInputStream()) {
-                            const auto limit = int64_t(vdx::sysex::kMaxFileBytes) + 1;
-                            const auto n = juce::jmin(in->getTotalLength(), limit);
-                            bytes.resize(size_t(juce::jmax<int64_t>(0, n)));
+                            const juce::int64 limit = juce::int64(vdx::sysex::kMaxFileBytes) + 1;
+                            const juce::int64 n = juce::jmin<juce::int64>(in->getTotalLength(), limit);
+                            bytes.resize(size_t(juce::jmax<juce::int64>(0, n)));
                             if (!bytes.empty()) bytes.resize(size_t(juce::jmax(0, in->read(bytes.data(), int(bytes.size())))));
                           }
                           const std::string reply = bridge_->importFile(f.getFileName().toStdString(), bytes);
