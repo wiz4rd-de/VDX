@@ -17,6 +17,7 @@ TEST_GLOBS = [
     "ui/src/**/*.test.ts",
     "ui/e2e/**/*.ts",
     "tests/CMakeLists.txt",
+    "plugin/CMakeLists.txt",
     "tools/bench/CMakeLists.txt",
     "tools/clean_checkout.sh",
     "ui/scripts/*.mjs",
