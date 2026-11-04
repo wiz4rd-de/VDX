@@ -41,7 +41,17 @@ ctest --test-dir build -C Release --output-on-failure      # Linux: prefix with 
 ```
 
 Artefacts are in `build/plugin/VDX_artefacts/Release/{Standalone,VST3,AU}`.
-The VST3 and AU are also copied to the user plug-in folders after the build.
+The VST3 and AU are also copied to the plug-in folders after the build (on
+Windows the system VST3 folder needs an elevated prompt). The plugin build runs
+`npm ci` (first time) and `npm run build` in `ui/` and embeds `ui/dist`, so Node.js
+and npm must be on PATH whenever `VDX_BUILD_PLUGIN=ON`.
+
+Plugin validation (pluginval is a separate download, never part of the repo):
+`pluginval --strictness-level 5 --validate build/plugin/VDX_artefacts/Release/VST3/VDX.vst3`;
+on macOS also `auval -v aumu Vdxf Mfnk` (run `killall -9 AudioComponentRegistrar`
+after the first install). The standalone keeps its state in
+`~/Library/Application Support/VDX/`, `%APPDATA%\VDX\` or `~/.config/VDX/`
+(`VDX_STATE_DIR` overrides it).
 Core-only build without JUCE: add `-DVDX_BUILD_PLUGIN=OFF`.
 
 Useful targets: `vdx_tests` (Catch2 core suite: `./build/tests/vdx_tests "[tier1]"`),

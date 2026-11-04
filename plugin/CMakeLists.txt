@@ -97,3 +97,16 @@ if(VDX_BUILD_TESTS)
   add_test(NAME vdx_plugin_tests COMMAND vdx_plugin_tests --colour-mode none)
   set_tests_properties(vdx_plugin_tests PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
+
+# AC-PL1: pluginval at strictness 5. pluginval (GPL-3.0) is never part of the
+# repository; pass its path with -DVDX_PLUGINVAL=/path/to/pluginval (CI does).
+set(VDX_PLUGINVAL "" CACHE FILEPATH "pluginval executable for the AC-PL1 tests")
+if(VDX_BUILD_TESTS AND VDX_PLUGINVAL)
+  add_test(NAME AC-PL1_pluginval_vst3_strictness5
+           COMMAND ${VDX_PLUGINVAL} --strictness-level 5 --validate-in-process --validate $<TARGET_BUNDLE_DIR:VDX_VST3>)
+  if(APPLE)
+    # AU must be registered: COPY_PLUGIN_AFTER_BUILD installs it into ~/Library/Audio/Plug-Ins/Components.
+    add_test(NAME AC-PL1_pluginval_au_strictness5
+             COMMAND ${VDX_PLUGINVAL} --strictness-level 5 --validate-in-process --validate "$ENV{HOME}/Library/Audio/Plug-Ins/Components/VDX.component")
+  endif()
+endif()

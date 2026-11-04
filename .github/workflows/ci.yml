@@ -67,20 +67,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: nuget install Microsoft.Web.WebView2 -Version 1.0.2903.40 -OutputDirectory "$env:USERPROFILE\AppData\Local\PackageManagement\NuGet\Packages"
-      - name: Configure
-        run: cmake -S . -B build ${{ matrix.configure }} -DVDX_BUILD_PLUGIN=ON -DVDX_BUILD_TESTS=ON
-      - name: Build
-        run: cmake --build build --config Release --parallel
-      - name: Tests (core, plugin, licence)
-        if: runner.os != 'Linux'
-        run: ctest --test-dir build -C Release --output-on-failure
-      - name: Tests (core, plugin, licence) under xvfb
-        if: runner.os == 'Linux'
-        run: xvfb-run -a ctest --test-dir build -C Release --output-on-failure
-      - name: Native benchmark (AC-N1.1, < 5 % of real time)
-        if: runner.os == 'Linux'
-        run: ./build/tools/bench/vdx_bench --limit 5
-      - name: pluginval strictness 5 (AC-PL1)
+      - name: Download pluginval (GPL tool, never in the repository)
         shell: bash
         run: |
           case "${{ runner.os }}" in
@@ -89,16 +76,22 @@ jobs:
             Linux)   asset=pluginval_Linux.zip;   exe=pluginval ;;
           esac
           curl -sSL -o pv.zip "https://github.com/Tracktion/pluginval/releases/download/${PLUGINVAL_VERSION}/${asset}"
-          mkdir -p pv && (cd pv && unzip -q ../pv.zip)
-          vst3=$(find build -type d -name "VDX.vst3" -path "*artefacts*" | head -1)
-          run() { if [ "${{ runner.os }}" = "Linux" ]; then xvfb-run -a "$@"; else "$@"; fi; }
-          run "pv/$exe" --strictness-level 5 --validate-in-process --validate "$vst3"
-          if [ "${{ runner.os }}" = "macOS" ]; then
-            au=$(find build -type d -name "VDX.component" -path "*artefacts*" | head -1)
-            mkdir -p ~/Library/Audio/Plug-Ins/Components && cp -R "$au" ~/Library/Audio/Plug-Ins/Components/
-            killall -9 AudioComponentRegistrar || true
-            "pv/$exe" --strictness-level 5 --validate-in-process --validate ~/Library/Audio/Plug-Ins/Components/VDX.component
-          fi
+          mkdir -p "$RUNNER_TEMP/pv" && (cd "$RUNNER_TEMP/pv" && unzip -q "$GITHUB_WORKSPACE/pv.zip")
+          echo "PLUGINVAL=$RUNNER_TEMP/pv/$exe" >> "$GITHUB_ENV"
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build ${{ matrix.configure }} -DVDX_BUILD_PLUGIN=ON -DVDX_BUILD_TESTS=ON -DVDX_PLUGINVAL="$PLUGINVAL"
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Register the AU (macOS)
+        if: runner.os == 'macOS'
+        run: killall -9 AudioComponentRegistrar || true
+      - name: Tests — core, plugin, pluginval strictness 5 (AC-PL1), licence
+        if: runner.os != 'Linux'
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Tests — core, plugin, pluginval strictness 5 (AC-PL1), licence (xvfb)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a ctest --test-dir build -C Release --output-on-failure
       - name: Sign and notarise (macOS, only when secrets exist)
         if: runner.os == 'macOS' && env.MACOS_CERTIFICATE != ''
         env:
