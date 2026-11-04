@@ -1,0 +1,14 @@
+/build/
+/build-*/
+node_modules/
+/ui/dist/
+/ui/public/vdx.js
+/ui/public/vdx.wasm
+/ui/public/vdx.aw.js
+/ui/test-results/
+/ui/playwright-report/
+/banks/external/
+/tools/oracle/build/
+.DS_Store
+__pycache__/
+*.pyc
