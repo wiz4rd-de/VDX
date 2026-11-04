@@ -1,0 +1,19 @@
+# Post-merge smoke test (owner rule, phase 2): after a merge to main, confirm
+# the merged build works without re-running the full suite. VDX has no deploy
+# pipeline, so this is a smoke-only job: build the core and run the [smoke]
+# tests (an instrument renders a note through the whole pipeline).
+name: Smoke
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DVDX_BUILD_PLUGIN=OFF -DVDX_BUILD_TESTS=ON
+      - run: cmake --build build --target vdx_tests --parallel
+      - run: ./build/tests/vdx_tests "[smoke]"
