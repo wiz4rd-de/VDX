@@ -1,0 +1,18 @@
+/* SPEC §11 colour tokens — frozen. Final tuning against period photos is a
+   human follow-up (§15.4). Do not edit these values; derived colours live in
+   app.css. */
+:root {
+  --body:        #2B211B;
+  --panel:       #4A392C;
+  --programmer:  #3A2D24;
+  --overlay:     #322720;
+  --dx-green:    #63B39B;
+  --dx-green-lit:#9BE3C9;
+  --violet:      #9A86C4;
+  --brown-legend:#C3926A;
+  --salmon:      #EE8A76;
+  --legend:      #E9E5CD;
+  --lcd-bg:      #9BA48B;  --lcd-ink: #1C2216;  --lcd-off: #8E977F;
+  --led-on:      #FF3B2F;  --led-off: #3A1512;
+  --carrier:     #E9A15B;  --modulator: #6FA8DC;
+}

@@ -1,0 +1,23 @@
+/* Bundled fonts (SPEC §11, R-L2: SIL OFL 1.1, licences in ./fonts/).
+   Latin subsets from @fontsource; nothing is loaded from a CDN. */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url('./fonts/barlow-condensed-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: block;
+  src: url('./fonts/barlow-condensed-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url('./fonts/oswald-latin-500-normal.woff2') format('woff2');
+}

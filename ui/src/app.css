@@ -1,0 +1,182 @@
+/* Global UI styles. Colours come only from theme.css tokens (derived tints
+   use color-mix of tokens). */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--body);
+  color: var(--legend);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+#app {
+  height: 100%;
+}
+button,
+input,
+select {
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+/* R-U5: visible 2 px --legend focus ring on every control. */
+:focus-visible {
+  outline: 2px solid var(--legend);
+  outline-offset: 1px;
+}
+[role='group']:focus-visible,
+[data-op-panel]:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Programmer blocks */
+.block {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--panel);
+  border-radius: 3px;
+  background: var(--programmer);
+  color: var(--legend);
+}
+.block .head {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 6px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.title {
+  font: 600 14px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.12em;
+  color: var(--legend);
+}
+.lbl {
+  display: block;
+  font: 600 9px/10px 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.05em;
+  color: var(--legend);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.f {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.menu-btn,
+.btn,
+.tog {
+  box-sizing: border-box;
+  height: 24px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid var(--legend);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--legend);
+  font: 600 13px/1 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.menu-btn {
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+.btn:disabled,
+.tog:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.btn.primary,
+.tog.on {
+  background: var(--legend);
+  color: var(--overlay);
+}
+
+/* Popup menus */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+}
+.menu {
+  position: absolute;
+  z-index: 41;
+  min-width: 150px;
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--overlay);
+  border: 1px solid var(--legend);
+  border-radius: 3px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--body) 70%, transparent);
+}
+.menu button {
+  margin: 0;
+  padding: 3px 14px;
+  border: none;
+  background: transparent;
+  color: var(--legend);
+  font: 500 14px/1.2 'Barlow Condensed', sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.menu button:hover:not(:disabled),
+.menu button:focus-visible {
+  background: var(--panel);
+}
+.menu button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.menu .sep {
+  height: 1px;
+  margin: 3px 0;
+  background: var(--panel);
+}
+
+/* Overlays (bank manager, settings) */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--body) 72%, transparent);
+}
+.overlay {
+  position: absolute;
+  z-index: 21;
+  box-sizing: border-box;
+  background: var(--overlay);
+  color: var(--legend);
+  border: 1px solid var(--panel);
+  border-radius: 4px;
+  box-shadow: 0 10px 40px color-mix(in srgb, var(--body) 80%, transparent);
+}
+
+/* Native form controls in overlays */
+.overlay input[type='checkbox'],
+.overlay input[type='radio'] {
+  accent-color: var(--dx-green);
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+.overlay select {
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--legend);
+  border-radius: 2px;
+  background: var(--body);
+  color: var(--legend);
+  font: 500 14px/1 'Barlow Condensed', sans-serif;
+  color-scheme: dark;
+}
