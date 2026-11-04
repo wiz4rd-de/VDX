@@ -186,3 +186,16 @@ TEST_CASE("AC-S1.1 four edit paths give one state (core command, front panel, Sy
     CHECK(std::memcmp(rigs[k]->core().engVoice, rigs[0]->core().engVoice, 156) == 0);
   }
 }
+
+TEST_CASE("AC-U4.1 core part: SelectOperator selects the operator without changing the mode", "[panel]") {
+  vdx::Instrument inst(48000.0, 512);
+  std::vector<float> l(512), r(512);
+  vdx::Command c;
+  c.type = vdx::CmdType::SelectOperator;
+  c.src = vdx::Source::Programmer;
+  c.a = 4;
+  inst.post(c);
+  inst.render(l.data(), r.data(), 512);
+  CHECK(inst.core().impl().selOp == 4);
+  CHECK(inst.core().impl().mode == vdx::kModePlay);
+}

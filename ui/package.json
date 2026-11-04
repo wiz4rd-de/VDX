@@ -11,7 +11,11 @@
     "test": "vitest run",
     "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "contrast": "node scripts/contrast.mjs",
-    "raster-check": "node scripts/raster-check.mjs"
+    "raster-check": "node scripts/raster-check.mjs",
+    "web": "node scripts/ensure-wasm.mjs && vite",
+    "web:e2e": "node scripts/ensure-wasm.mjs && vite --mode e2e",
+    "web:noiso": "vite --mode noiso",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "svelte": "5.57.2"

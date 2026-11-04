@@ -121,6 +121,7 @@ enum class CmdType : uint16_t {
   // Lifecycle.
   StartSplash,     // F-1: show the splash, then PLAY
   RequestSnapshot, // R-S5: emit the complete state, then SnapshotEnd
+  SelectOperator,  // a = op 1..6 (Alt+1..6, R-U4): selected operator, no mode change
   Count
 };
 

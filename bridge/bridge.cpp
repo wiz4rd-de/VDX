@@ -542,6 +542,7 @@ std::string Bridge::handle(const std::string& json) {
   else if (t == "requestDump") send(CmdType::RequestDump, Source::BankManager);
   else if (t == "snapshot") send(CmdType::RequestSnapshot, Source::Internal);
   else if (t == "startSplash") send(CmdType::StartSplash, Source::Internal);
+  else if (t == "selectOp") send(CmdType::SelectOperator, Source::Programmer, j.i("op", 1));
   else if (t == "exportDone") {
     if (j.str("what") == "crt") send(CmdType::ClearCartridgeChanged, Source::BankManager);
   }

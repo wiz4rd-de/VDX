@@ -158,6 +158,9 @@ void Core::Impl::onCommand(const Command& c, const uint8_t* payload, int len) {
       break;
     }
     case CmdType::StartSplash: startSplash(); break;
+    case CmdType::SelectOperator:
+      if (c.a >= 1 && c.a <= 6) selOp = c.a;
+      break;
     case CmdType::RequestSnapshot:
       refresh();
       emitSnapshot();

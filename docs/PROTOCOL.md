@@ -44,6 +44,7 @@ Every message is an object with a `t` field. Unknown messages are ignored.
 | `importFile` | `name`, `b64` | A chosen or dropped file (base64). |
 | `importChoice` | `target` ∈ `crt`, `int` | Answer to a bank import choice. |
 | `importCancel` | | Cancel the bank import choice. |
+| `selectOp` | `op` 1…6 | Select the operator (Alt+1…6, R-U4); no mode change. |
 | `snapshot` | | Request the complete state (R-S5). Sent once when the UI connects. |
 | `startSplash` | | Start the power-on splash (sent by the web glue on the start gesture; the desktop shell posts it natively). |
 | `exportDone` | `what` | The shell wrote an export; for `crt` this clears the cartridge's changed flag (F-12.5). |

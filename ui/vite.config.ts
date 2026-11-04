@@ -25,11 +25,18 @@ function fontLicences(): Plugin {
   };
 }
 
-export default defineConfig({
+// Modes: default (`npm run web`), `e2e` (test build: exposes the analyser tap,
+// SPEC §10) and `noiso` (port 5174 WITHOUT isolation headers, for the error
+// screen test AC-SC2).
+export default defineConfig(({ mode }) => ({
   plugins: [svelte(), fontLicences()],
   // Relative asset URLs: the desktop shell serves ui/dist from a resource provider.
   base: './',
-  server: { port: 5173, strictPort: true, headers: isolationHeaders },
+  server: {
+    port: mode === 'noiso' ? 5174 : 5173,
+    strictPort: true,
+    headers: mode === 'noiso' ? {} : isolationHeaders,
+  },
   preview: { port: 5173, strictPort: true, headers: isolationHeaders },
   build: {
     outDir: 'dist',
@@ -44,4 +51,4 @@ export default defineConfig({
     environment: 'node',
     testTimeout: 60000,
   },
-});
+}));
