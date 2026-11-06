@@ -1,6 +1,8 @@
 # Licences
 
-VDX is a personal project owned by Marco Funk. Nothing under a copyleft licence
+VDX is a personal project owned by Marco Funk. Its own code is released under
+the MIT License (`LICENSE` in the repository root). The third-party components
+below keep their own licences and are not covered by it. Nothing under a copyleft licence
 is linked into or shipped with VDX (SPEC R-L1, R-L2); `tools/licence_check.py`
 enforces it in CI (R-L3).
 

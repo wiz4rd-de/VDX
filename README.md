@@ -105,5 +105,15 @@ lists every acceptance criterion and the tests that cover it.
 
 ## Licences
 
-See docs/LICENSES.md. JUCE is used under the JUCE 9 Starter licence; no
-copyleft code is linked or shipped (`python3 tools/licence_check.py --self-test`).
+VDX's own code is released under the [MIT License](LICENSE). Third-party
+components keep their own licences; [docs/LICENSES.md](docs/LICENSES.md) lists
+them. This includes the MSFA-derived engine files, which stay Apache-2.0 (see
+`core/fm/third_party/msfa/NOTICE`).
+
+JUCE is not covered by the MIT License. It is a git submodule pointing at the
+upstream JUCE repository, and the plugin and standalone builds use it under the
+JUCE 9 Starter licence. Anyone who builds or distributes those builds must use
+JUCE under its own terms: one of the JUCE 9 EULA tiers, or the AGPLv3. The core
+library, its Catch2 suite and the web build do not use JUCE.
+
+No copyleft code is linked or shipped (`python3 tools/licence_check.py --self-test`).
