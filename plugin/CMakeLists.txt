@@ -3,7 +3,13 @@
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 find_program(VDX_NODE_EXECUTABLE NAMES node node.exe)
-find_program(VDX_NPM_EXECUTABLE NAMES npm npm.cmd)
+# On Windows, Node's folder holds `npm` (a POSIX shell script) next to `npm.cmd`;
+# only npm.cmd can be started from Python (tools/embed_ui.py).
+if(WIN32)
+  find_program(VDX_NPM_EXECUTABLE NAMES npm.cmd npm)
+else()
+  find_program(VDX_NPM_EXECUTABLE NAMES npm)
+endif()
 if(NOT VDX_NODE_EXECUTABLE OR NOT VDX_NPM_EXECUTABLE)
   message(FATAL_ERROR
     "VDX: Node.js and npm are required to build the user interface (ui/dist) that the plugin and the "

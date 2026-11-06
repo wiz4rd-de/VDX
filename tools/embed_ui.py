@@ -15,6 +15,7 @@ Steps:
      rewritten only when its content changes.
 """
 import argparse
+import os
 import pathlib
 import shutil
 import subprocess
@@ -41,6 +42,16 @@ def find_tool(explicit, names):
     return None
 
 
+def windows_shim(path: str) -> str:
+    # Node's Windows folder holds `npm` (a POSIX shell script for Git Bash) next
+    # to `npm.cmd`; CreateProcess can only start the .cmd (WinError 193 otherwise).
+    if os.name == "nt":
+        p = pathlib.Path(path)
+        if not p.suffix and p.with_suffix(".cmd").is_file():
+            return str(p.with_suffix(".cmd"))
+    return path
+
+
 def run(cmd, cwd: pathlib.Path) -> None:
     print("embed_ui: " + " ".join(str(c) for c in cmd) + f"   (in {cwd})", flush=True)
     r = subprocess.run([str(c) for c in cmd], cwd=str(cwd))
@@ -49,8 +60,10 @@ def run(cmd, cwd: pathlib.Path) -> None:
 
 
 def build_ui(ui: pathlib.Path, npm_hint) -> None:
-    npm = find_tool(npm_hint, ["npm", "npm.cmd"])
+    npm = find_tool(npm_hint, ["npm.cmd", "npm"] if os.name == "nt" else ["npm"])
     node = find_tool(None, ["node", "node.exe"])
+    if npm:
+        npm = windows_shim(npm)
     if not npm or not node:
         fail("Node.js and npm are required to build the VDX user interface (ui/dist) that the plugin and "
              "standalone app embed. Install Node.js and npm, or configure with -DVDX_BUILD_PLUGIN=OFF.")
