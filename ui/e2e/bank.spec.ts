@@ -1,5 +1,5 @@
 // Bank manager (§5.7, F-12) against the real core.
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Download, type Page } from '@playwright/test';
 import { launch, loadFile, dropFile, bankNames, expectLcd, lcd, selectMidiOutput, PLAY_L1 } from './support/app';
 import { midiSent } from './support/doubles';
 import { bankWithNames, defaultBank, e2eNames, headerless, voiceDump, wav } from './support/syx';
@@ -128,14 +128,15 @@ test.describe('AC-F12.1 bank manager', () => {
     await expect(page.getByTestId('cartridge-slot')).toHaveAttribute('title', 'NO CARTRIDGE');
   });
 
-  test('AC-F12.1 Export writes downloads with sanitised names; exporting the cartridge clears its changed flag', async ({ page }) => {
+  test('AC-F12.1 Export writes downloads with sanitised names; exporting the cartridge clears its changed flag', async ({ page, browserName }) => {
+    await recordDownloadNames(page);
     await launch(page);
     await openBank(page);
     // Internal bank.
     let dl = page.waitForEvent('download');
     await page.getByTestId('bank-export-0').click();
     let d = await dl;
-    expect(d.suggestedFilename()).toBe('INTERNAL.syx');
+    await expectDownloadName(page, d, browserName, 'INTERNAL.syx');
     const intBytes = await readDownload(d);
     expect(intBytes.length).toBe(4104);
     expect(Buffer.compare(intBytes, defaultBank())).toBe(0); // unchanged import/export is byte-identical (R-D3)
@@ -148,7 +149,7 @@ test.describe('AC-F12.1 bank manager', () => {
     dl = page.waitForEvent('download');
     await page.getByTestId('bank-export-1').click();
     d = await dl;
-    expect(d.suggestedFilename()).toBe('My Bank _v2__.syx');
+    await expectDownloadName(page, d, browserName, 'My Bank _v2__.syx');
     const crtBytes = await readDownload(d);
     expect(crtBytes.length).toBe(4104);
     expect([...crtBytes.subarray(0, 6)]).toEqual([0xf0, 0x43, 0x00, 0x09, 0x20, 0x00]);
@@ -159,10 +160,37 @@ test.describe('AC-F12.1 bank manager', () => {
     dl = page.waitForEvent('download');
     await page.getByTestId('bank-export-voice').click();
     d = await dl;
-    expect(d.suggestedFilename()).toBe('LEAD_2 _.syx');
+    await expectDownloadName(page, d, browserName, 'LEAD_2 _.syx');
     expect((await readDownload(d)).length).toBe(163);
   });
 });
+
+type DownloadNames = { __vdxDownloadNames?: string[] };
+
+// Records the file name the app gives each download (the anchor's `download`
+// attribute, F-12.5). Install before launch().
+async function recordDownloadNames(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const click = HTMLElement.prototype.click;
+    HTMLElement.prototype.click = function (this: HTMLElement): void {
+      if (this instanceof HTMLAnchorElement && this.download) {
+        const w = window as unknown as DownloadNames;
+        (w.__vdxDownloadNames ??= []).push(this.download);
+      }
+      click.call(this);
+    };
+  });
+}
+
+// F-12.5 is about the name the app gives the download, so that must match
+// exactly. The browser's name must match too, except in WebKitGTK (Playwright's
+// WebKit on Linux), which replaces spaces in a download's file name with "_".
+async function expectDownloadName(page: Page, d: Download, browserName: string, name: string): Promise<void> {
+  const given = await page.evaluate(() => (window as unknown as DownloadNames).__vdxDownloadNames ?? []);
+  expect(given.at(-1)).toBe(name);
+  const webkitGtk = browserName === 'webkit' && process.platform === 'linux';
+  expect(d.suggestedFilename()).toBe(webkitGtk ? name.replaceAll(' ', '_') : name);
+}
 
 async function readDownload(d: import('@playwright/test').Download): Promise<Buffer> {
   const stream = await d.createReadStream();

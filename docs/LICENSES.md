@@ -18,7 +18,7 @@ enforces it in CI (R-L3).
 | clsx, esm-env | MIT | UI bundle (`ui/dist`), via Svelte | Svelte runtime dependencies |
 | Barlow Condensed (500, 600) | SIL OFL 1.1 | `ui/src/fonts` | Legends and numbers |
 | Oswald (500) | SIL OFL 1.1 | `ui/src/fonts` | Wordmark |
-| Microsoft WebView2 SDK loader | Microsoft WebView2 SDK licence (`LICENSE.txt` in the NuGet package) | Windows builds, linked statically (D-PL8) | Finds the WebView2 runtime |
+| Microsoft WebView2 SDK loader | BSD-3-Clause (Microsoft; `LICENSE.txt` in the NuGet package) | Windows builds, linked statically (D-PL8) | Finds the WebView2 runtime |
 | Inno Setup 6 | Inno Setup License | Windows installer (`VDX-*-Setup.exe`) | Installer runtime; only in release packages |
 
 ### Vendored by JUCE, compiled into the plugin and standalone

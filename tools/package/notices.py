@@ -151,7 +151,7 @@ def build(webview2_license) -> str:
     ]
     if webview2_license:
         parts.append(section("Microsoft WebView2 SDK (static loader, Windows)",
-                             "Microsoft WebView2 SDK licence", read(Path(webview2_license))))
+                             "BSD-3-Clause", read(Path(webview2_license))))
     return "".join(parts).rstrip() + "\n"
 
 
@@ -174,7 +174,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--out", type=Path, help="write NOTICES.txt to this path")
     ap.add_argument("--install", type=Path, help="VDX_artefacts/<config> directory to install NOTICES.txt into")
-    ap.add_argument("--webview2-license", help="LICENSE.txt of the Microsoft.Web.WebView2 NuGet package (Windows)")
+    ap.add_argument("--webview2-license", help="LICENSE.txt of the Microsoft.Web.WebView2 NuGet package (Windows);"
+                    " its NOTICE.txt covers the SDK's .NET code generator, not the static loader")
     args = ap.parse_args()
     if not args.out and not args.install:
         ap.error("give --out and/or --install")
