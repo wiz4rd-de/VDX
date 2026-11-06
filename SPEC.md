@@ -1226,7 +1226,7 @@ juce_add_plugin(VDX
     VERSION                   0.1.0
     COMPANY_NAME              "Marco Funk"
     COMPANY_COPYRIGHT         "© 2026 Marco Funk"
-    BUNDLE_ID                 com.marcofunk.vdx
+    BUNDLE_ID                 io.github.wiz4rd-de.vdx
     PLUGIN_MANUFACTURER_CODE  Mfnk
     PLUGIN_CODE               Vdxf
     DESCRIPTION               "6-operator FM synthesizer"
@@ -1570,7 +1570,9 @@ The README documents:
 **CI** (GitHub Actions):
 - the matrix covers macOS (universal), Windows (MSVC), Ubuntu 24.04 (webkit2gtk-4.1) and wasm;
 - it runs every §13 criterion, the licence check and the benchmarks;
-- signing and notarisation steps are present but skipped unless their secrets exist.
+- signing and notarisation steps are present, in the release workflow, but skipped unless their secrets exist.
+
+**Releases** (`.github/workflows/release.yml`, started by hand from `main`): packages for macOS (one `.pkg` with the app, VST3 and AU), Windows (installer and zip) and Ubuntu 24.04 (`.tar.gz`), each carrying the licence notices, on a draft GitHub Release. They are unsigned until signing credentials exist (owner decision, D-PL17).
 
 ### 15.2 Web (local hosting)
 
@@ -1600,7 +1602,7 @@ The README documents:
 | Final colour hex values against period photos | Visual judgement |
 | Signed/notarised installers | Apple Developer ID / Windows signing credentials |
 | Public web hosting | Needs a host that sets COOP/COEP |
-| Trade-dress and name check before public release; replacing `com.marcofunk.vdx` with an owned reverse domain and re-checking the four-character codes | Legal judgement and ownership |
+| Trade-dress and name check before public release; re-checking the four-character codes (the bundle ID is settled: D-PL16) | Legal judgement |
 
 ### 15.5 Sources
 

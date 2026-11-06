@@ -16,7 +16,7 @@ juce_add_plugin(VDX
     VERSION                   0.1.0
     COMPANY_NAME              "Marco Funk"
     COMPANY_COPYRIGHT         "© 2026 Marco Funk"
-    BUNDLE_ID                 com.marcofunk.vdx
+    BUNDLE_ID                 io.github.wiz4rd-de.vdx
     PLUGIN_MANUFACTURER_CODE  Mfnk
     PLUGIN_CODE               Vdxf
     DESCRIPTION               "6-operator FM synthesizer"
