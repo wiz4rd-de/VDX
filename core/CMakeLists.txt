@@ -29,6 +29,10 @@ target_include_directories(vdx_core_internal INTERFACE
 target_link_libraries(vdx_core_internal INTERFACE vdx_core)
 
 vdx_set_strict_fp(vdx_core)
+# r8brain (included only by instrument.cpp) pulls in <windows.h> on Windows;
+# NOMINMAX keeps its min/max macros away from std::min/std::max. PRIVATE, so
+# JUCE targets, which define NOMINMAX themselves, are not affected.
+target_compile_definitions(vdx_core PRIVATE $<$<PLATFORM_ID:Windows>:NOMINMAX>)
 set_source_files_properties(${VDX_MSFA_SOURCES} PROPERTIES COMPILE_OPTIONS
   "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-unused-variable;-Wno-sign-compare;-Wno-deprecated-declarations;-Wno-unused-function>")
 if(VDX_SUBNORMAL_CHECKS)

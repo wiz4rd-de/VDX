@@ -8,6 +8,32 @@ run in three builds: a standalone app, a VST3/AU plugin and a locally hosted web
 page. SPEC.md is the product specification; DECISIONS.md records the choices
 made where it left room.
 
+## Install a release
+
+[GitHub Releases](https://github.com/wiz4rd-de/VDX/releases) has packages for
+macOS, Windows and Linux. They are **not code-signed**, so the operating
+system warns the first time.
+
+- **macOS 13 or later (Apple silicon and Intel):** open `VDX-<version>-macOS.pkg`.
+  macOS refuses it the first time: open System Settings → Privacy & Security,
+  click "Open Anyway" next to the message about the package, and confirm. It
+  puts `VDX.app` into /Applications and the VST3 and AU plugins into
+  /Library/Audio/Plug-Ins; "Customize" lets you leave parts out.
+- **Windows 10 22H2 or later / Windows 11 (x64):** run
+  `VDX-<version>-Windows-x64-Setup.exe`. If SmartScreen says "Windows protected
+  your PC", choose "More info", then "Run anyway". It puts the app into
+  Program Files\VDX and the VST3 plugin into Common Files\VST3. The zip holds
+  the same files to copy by hand. The interface needs the Microsoft Edge
+  WebView2 Runtime: Windows 11 includes it; on Windows 10,
+  [install it](https://developer.microsoft.com/microsoft-edge/webview2/) if VDX
+  says it is missing.
+- **Linux (Ubuntu 24.04, x64):** unpack `VDX-<version>-Linux-x64.tar.gz`,
+  install WebKitGTK (`sudo apt install libwebkit2gtk-4.1-0`), run `./VDX`, and
+  copy `VDX.vst3` into `~/.vst3` for the plugin. `INSTALL.txt` has the details.
+
+`SHA256SUMS` lists the checksums. Every package carries `NOTICES.txt` with the
+licences of VDX and of the third-party code built into it.
+
 ## Requirements
 
 | Build | Tools |
@@ -95,13 +121,27 @@ web/             worklet.cpp + build.sh (browser module)
 ui/              Svelte 5 + TypeScript UI (one bundle for every build)
 tests/           Catch2 suites (tier1 engine, tier2 panel/data) and goldens
 banks/           default bank sources (JSON) and banks/vdx-default.syx
-tools/           table generator, default-bank generator, licence check, benchmark, AC coverage
+tools/           table generator, default-bank generator, licence check, benchmark, AC coverage, packaging
 docs/            LICENSES.md, STATE.md (state blob layout), PROTOCOL.md
 ```
 
 `tools/fetch_banks.sh` downloads community banks into the git-ignored
 `banks/external/` for local round-trip testing. `python3 tools/ac_coverage.py`
 lists every acceptance criterion and the tests that cover it.
+
+## Making a release
+
+1. Set the new version in `CMakeLists.txt` (`project(VDX VERSION …)`) and
+   `plugin/CMakeLists.txt` (`VERSION`), and merge that to `main` through a PR.
+2. Run the Release workflow on `main`: Actions → Release → Run workflow, or
+   `gh workflow run release.yml -f version=X.Y.Z` (add `-f prerelease=false`
+   for a full release).
+3. It builds the three platforms, packages them with `tools/package/`, checks
+   the packaged plugins with pluginval and creates a draft release with the
+   packages and `SHA256SUMS`. Check the draft, then publish it.
+
+Signing runs only when the signing secrets exist (`tools/sign/`); without them
+the packages are unsigned. DECISIONS.md D-PL16–D-PL19 describe the packages.
 
 ## Licences
 

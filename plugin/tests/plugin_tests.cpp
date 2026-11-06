@@ -19,6 +19,22 @@
 #include "sysex/voice.h"
 #include "vdx/params.h"
 
+// After the JUCE headers, and without GDI, so no Windows macro meets JUCE's names.
+#if defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOGDI
+#define NOGDI
+#endif
+#include <windows.h>  // QueryThreadCycleTime
+#else
+#include <time.h>  // clock_gettime(CLOCK_THREAD_CPUTIME_ID)
+#endif
+
 using vdx::plugin::HostKind;
 using vdx::plugin::VdxProcessor;
 namespace params = vdx::params;
@@ -27,6 +43,38 @@ namespace {
 
 constexpr double kRate = 48000.0;
 constexpr int kBlock = 512;
+
+// CPU time the calling thread has used, in seconds (AC-PL3, D-PL20). Unlike
+// wall time it leaves out the time the OS keeps the thread off the CPU, which
+// on a loaded machine says nothing about the plugin.
+double threadCpuSeconds() {
+#if defined(_WIN32)
+  // GetThreadTimes advances only once per scheduler tick (~15.6 ms, more than a
+  // block's budget). The thread's cycle count is exact; its rate is measured
+  // once per thread. Preemption during the measurement can only lower the
+  // rate, so the highest of three is kept.
+  static thread_local double cyclesPerSecond = 0;
+  if (cyclesPerSecond == 0) {
+    for (int attempt = 0; attempt < 3; ++attempt) {
+      ULONG64 c0 = 0, c1 = 0;
+      QueryThreadCycleTime(GetCurrentThread(), &c0);
+      const auto t0 = std::chrono::steady_clock::now();
+      while (std::chrono::steady_clock::now() - t0 < std::chrono::milliseconds(20)) {
+      }
+      QueryThreadCycleTime(GetCurrentThread(), &c1);
+      const double s = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+      cyclesPerSecond = std::max(cyclesPerSecond, double(c1 - c0) / s);
+    }
+  }
+  ULONG64 c = 0;
+  QueryThreadCycleTime(GetCurrentThread(), &c);
+  return double(c) / cyclesPerSecond;
+#else
+  timespec ts{};
+  clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+  return double(ts.tv_sec) + double(ts.tv_nsec) * 1e-9;
+#endif
+}
 
 juce::RangedAudioParameter* ranged(VdxProcessor& p, int i) {
   return dynamic_cast<juce::RangedAudioParameter*>(p.getParameters()[i]);
@@ -285,29 +333,37 @@ TEST_CASE("AC-PL3 state during playback round-trips into a new instance without 
   a.post(vdx::CmdType::SetSetting, vdx::Source::Programmer, int(vdx::SettingId::Zoom), 120);
   a.settle();
 
+  // A block's cost is its CPU time on the audio thread (D-PL20); wall time is
+  // reported alongside, because a busy machine can preempt the thread for
+  // longer than a block without any work or waiting in the plugin.
   const double budget = double(kBlock) / kRate;
-  auto playback = [](VdxProcessor& proc, std::atomic<bool>& stop, double& worst, int& over, int& blocks) {
+  auto playback = [](VdxProcessor& proc, std::atomic<bool>& stop, double& worst, double& worstWall, int& over,
+                     int& blocks) {
     juce::AudioBuffer<float> buf(2, kBlock);
     juce::MidiBuffer m;
     const double budgetSec = double(kBlock) / kRate;
+    threadCpuSeconds();  // Windows: measures the cycle rate before the first timed block
     while (!stop.load()) {
       m.clear();
       if (blocks % 40 == 0) m.addEvent(juce::MidiMessage::noteOn(1, 48 + blocks % 24, uint8_t(100)), blocks % kBlock);
       if (blocks % 40 == 20) m.addEvent(juce::MidiMessage::allNotesOff(1), 0);
+      const double c0 = threadCpuSeconds();
       const auto t0 = std::chrono::steady_clock::now();
       proc.processBlock(buf, m);
-      const double dt = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
-      worst = std::max(worst, dt);
-      if (dt > budgetSec) ++over;
+      const double cpu = threadCpuSeconds() - c0;
+      const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+      worst = std::max(worst, cpu);
+      worstWall = std::max(worstWall, wall);
+      if (cpu > budgetSec) ++over;
       ++blocks;
     }
   };
 
   // getStateInformation on this thread while the audio thread plays.
   std::atomic<bool> stop{false};
-  double worstA = 0;
+  double worstA = 0, worstWallA = 0;
   int overA = 0, blocksA = 0;
-  std::thread audioA([&] { playback(*a.p, stop, worstA, overA, blocksA); });
+  std::thread audioA([&] { playback(*a.p, stop, worstA, worstWallA, overA, blocksA); });
   juce::MemoryBlock blob;
   a.p->getStateInformation(blob);
   REQUIRE(blob.getSize() > 0);
@@ -325,9 +381,9 @@ TEST_CASE("AC-PL3 state during playback round-trips into a new instance without 
   Rig b;
   b.settle();
   stop = false;
-  double worstB = 0;
+  double worstB = 0, worstWallB = 0;
   int overB = 0, blocksB = 0;
-  std::thread audioB([&] { playback(*b.p, stop, worstB, overB, blocksB); });
+  std::thread audioB([&] { playback(*b.p, stop, worstB, worstWallB, overB, blocksB); });
   while (blocksB < 20) std::this_thread::sleep_for(std::chrono::milliseconds(1));
   b.p->setStateInformation(blob.getData(), int(blob.getSize()));
   const int loadedAt = blocksB;
@@ -344,7 +400,8 @@ TEST_CASE("AC-PL3 state during playback round-trips into a new instance without 
   CHECK(b.p->getCurrentProgram() == 4);
   CHECK(b.p->zoomSetting() == 120);
 
-  INFO("worst block A " << worstA * 1e3 << " ms, B " << worstB * 1e3 << " ms, budget " << budget * 1e3 << " ms");
+  INFO("worst block CPU A " << worstA * 1e3 << " ms, B " << worstB * 1e3 << " ms (wall A " << worstWallA * 1e3
+                            << " ms, B " << worstWallB * 1e3 << " ms), budget " << budget * 1e3 << " ms");
   CHECK(overA == 0);
   CHECK(overB == 0);
 }

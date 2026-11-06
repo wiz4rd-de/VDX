@@ -71,6 +71,9 @@ npx playwright test e2e/bank.spec.ts --project=chromium -g "AC-F12.2"
 ### Full local gate set (before any PR)
 `ctest` on a plugin-enabled build (core + plugin tests, licence/generator checks, benchmark; pluginval when `VDX_PLUGINVAL` is set), the Emscripten `ctest`, then in `ui/`: `check`, `test`, `contrast`, `build` + `raster-check`, `e2e`. CI (`.github/workflows/ci.yml`) runs the same set only on PRs into `main` and on manual dispatch. `smoke.yml` runs only `vdx_tests "[smoke]"` after a merge to `main`.
 
+### Releases
+`.github/workflows/release.yml` runs only by manual dispatch on `main` (`gh workflow run release.yml -f version=X.Y.Z`; the version must equal both CMake versions). It builds, writes `NOTICES.txt` into the bundles, signs only if the secrets exist, packages with `tools/package/` (macOS `.pkg`, Windows Inno Setup + zip, Linux `.tar.gz`), runs pluginval on the packaged plugins and creates a draft GitHub Release. Packages are unsigned (D-PL17). Test packaging locally on a copy of the artefacts: `python3 tools/package/notices.py --install <copy>` then `tools/package/macos.sh <copy> <version> <out>`.
+
 ## Architecture
 
 ### Layers

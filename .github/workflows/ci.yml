@@ -1,7 +1,7 @@
 # VDX CI (SPEC §15.1). Runs once per phase (owner rule): the full suite on pull
 # requests into main (pushes to an open PR re-run it — batch fixes), plus a
 # manual re-run. Never on pushes to development branches. The post-merge smoke
-# test lives in smoke.yml.
+# test lives in smoke.yml; signing and packaging live in release.yml (D-PL17).
 name: CI
 
 on:
@@ -92,20 +92,6 @@ jobs:
       - name: Tests — core, plugin, pluginval strictness 5 (AC-PL1), licence (xvfb)
         if: runner.os == 'Linux'
         run: xvfb-run -a ctest --test-dir build -C Release --output-on-failure
-      - name: Sign and notarise (macOS, only when secrets exist)
-        if: runner.os == 'macOS' && env.MACOS_CERTIFICATE != ''
-        env:
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-          MACOS_NOTARY_KEY: ${{ secrets.MACOS_NOTARY_KEY }}
-        run: tools/sign/macos.sh build
-      - name: Sign (Windows, only when secrets exist)
-        if: runner.os == 'Windows' && env.WINDOWS_CERTIFICATE != ''
-        shell: pwsh
-        env:
-          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-        run: tools/sign/windows.ps1 build
       - uses: actions/upload-artifact@v4
         if: always()
         with:
