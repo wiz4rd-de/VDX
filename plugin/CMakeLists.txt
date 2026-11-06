@@ -102,8 +102,11 @@ endif()
 # repository; pass its path with -DVDX_PLUGINVAL=/path/to/pluginval (CI does).
 set(VDX_PLUGINVAL "" CACHE FILEPATH "pluginval executable for the AC-PL1 tests")
 if(VDX_BUILD_TESTS AND VDX_PLUGINVAL)
+  # JUCE's artefact path is the .vst3 bundle directory on every platform;
+  # TARGET_BUNDLE_DIR only works where CMake builds real bundles (Apple).
   add_test(NAME AC-PL1_pluginval_vst3_strictness5
-           COMMAND ${VDX_PLUGINVAL} --strictness-level 5 --validate-in-process --validate $<TARGET_BUNDLE_DIR:VDX_VST3>)
+           COMMAND ${VDX_PLUGINVAL} --strictness-level 5 --validate-in-process
+                   --validate "$<GENEX_EVAL:$<TARGET_PROPERTY:VDX_VST3,JUCE_PLUGIN_ARTEFACT_FILE>>")
   if(APPLE)
     # AU must be registered: COPY_PLUGIN_AFTER_BUILD installs it into ~/Library/Audio/Plug-Ins/Components.
     add_test(NAME AC-PL1_pluginval_au_strictness5
